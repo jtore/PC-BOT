@@ -2,6 +2,7 @@ import discord
 import requests
 import sys
 import pycountry
+import random
 
 client = discord.Client()
 
@@ -19,7 +20,8 @@ usage = {
     "!display <query ...>": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
     "!profile <user>": "sends link to osu! profile",
-    "!rank <user>": "displays various stats for user"
+    "!stats <user>": "displays various stats for user",
+    "!roll [range]": "roll dice"
 }
 
 
@@ -62,7 +64,7 @@ def handle_command(message):
             send_message = r"http://osu.ppy.sh/u/" + str(args[1])
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!rank":  # Give a list of osu! profile stats
+    elif args[0] == "!stats":  # Give a list of osu! profile stats
         if len(args) > 1:
             if osu_api:
                 user = " ".join(args[1:])
@@ -73,7 +75,7 @@ def handle_command(message):
                     osu_stats["username"],
                     osu_stats["user_id"]
                 )
-                send_message += "Performance:  %spp (#%s) /%s #%s" % (
+                send_message += "Performance: %spp (#%s) /%s #%s" % (
                     osu_stats["pp_raw"],
                     osu_stats["pp_rank"],
                     pycountry.countries.get(alpha2=osu_stats["country"]).name,
@@ -91,6 +93,14 @@ def handle_command(message):
                 send_message = "This command is disabled. :thumbsdown:"
         else:
             send_message = ":thumbsdown:"
+    elif args[0] == "!roll":
+        roll_n = 100
+        if len(args) > 1:
+            try:
+                roll_n = int(args[1])
+            except ValueError:
+                pass
+        send_message = "rolls " + str(random.randrange(roll_n))
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
