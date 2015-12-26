@@ -80,7 +80,8 @@ def handle_command(message):
     elif args[0] == "!rank":  # Give a list of osu! profile stats
         if len(args) > 1:
             if osu_api:
-                to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + args[1]
+                user = " ".join(args[1:])
+                to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
                 osu_stats_request = requests.get(to_get)
                 osu_stats = osu_stats_request.json()[0]
                 send_message = "*Stats for %s* (%s) ```" % (
