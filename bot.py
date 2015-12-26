@@ -19,7 +19,6 @@ usage = {
     "!display <query ...>": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
     "!profile <user>": "sends link to osu! profile",
-    "!osu <profile> <stat>": "displays a profile stat (may break some things",
     "!rank <profile>:": "displays various stats for profile"
 }
 
@@ -61,20 +60,6 @@ def handle_command(message):
     elif args[0] == "!profile":  # Link to osu! profile
         if len(args) > 1:
             send_message = r"http://osu.ppy.sh/u/" + str(args[1])
-        else:
-            send_message = ":thumbsdown:"
-    elif args[0] == "!osu":  # Give osu! profile stat
-        if len(args) > 2:
-            if osu_api:
-                to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + args[1]
-                osu_stats_request = requests.get(to_get)
-                osu_stats = osu_stats_request.json()[0]
-                try:
-                    send_message = "**%s** for %s: `%s`" % (args[2], args[1], osu_stats[args[2]])
-                except KeyError:
-                    send_message = "No such key. :thumbsdown:"
-            else:
-                send_message = "This command is disabled. :thumbsdown:"
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!rank":  # Give a list of osu! profile stats
