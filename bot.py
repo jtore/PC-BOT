@@ -19,7 +19,7 @@ usage = {
     "!display <query ...>": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
     "!profile <user>": "sends link to osu! profile",
-    "!rank <profile>:": "displays various stats for profile"
+    "!rank <user>": "displays various stats for user"
 }
 
 
@@ -73,19 +73,19 @@ def handle_command(message):
                     osu_stats["username"],
                     osu_stats["user_id"]
                 )
-                send_message += "Performance:   %spp (#%s) /%s #%s" % (
+                send_message += "Performance:  %spp (#%s) /%s #%s" % (
                     osu_stats["pp_raw"],
                     osu_stats["pp_rank"],
                     pycountry.countries.get(alpha2=osu_stats["country"]).name,
                     osu_stats["pp_country_rank"]
                 )
-                send_message += "\nAccuracy:      %0.6f %%" % float(osu_stats["accuracy"])
-                send_message += "\n               %s SS %s S %s A" % (
+                send_message += "\nAccuracy:    %0.6f %%" % float(osu_stats["accuracy"])
+                send_message += "\n             %s SS %s S %s A" % (
                     osu_stats["count_rank_ss"],
                     osu_stats["count_rank_s"],
                     osu_stats["count_rank_a"]
                 )
-                send_message += "\nPlaycount:     " + osu_stats["playcount"]
+                send_message += "\nPlaycount:   " + osu_stats["playcount"]
                 send_message += "```"
             else:
                 send_message = "This command is disabled. :thumbsdown:"
