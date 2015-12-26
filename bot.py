@@ -7,12 +7,15 @@ import random
 client = discord.Client()
 
 if len(sys.argv) < 3:
-    print("usage: " + sys.argv[0] + " <email> <password>")
+    print("usage: " + sys.argv[0] + " <email> <password> [osu!api-key]")
     sys.exit(0)
 
 client.login(sys.argv[1], sys.argv[2])
 
-osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
+if len(sys.argv) > 3:
+    osu_api = sys.argv[3]
+else:
+    osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
 
 usage = {
     "!pcbot": "display commands",
@@ -36,6 +39,7 @@ def longest_cmd():
 
 def handle_command(message):
     args = message.content.split()
+    args[0] = args[0].lower()
     send_message = ""
 
     # Avoid these comments
@@ -49,7 +53,7 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!display":  # Link to images
         if len(args) > 1:
-            if len(args) > 2 and args[1] == "-u":
+            if len(args) > 2 and args[1].lower() == "-u":
                 query = ""
                 if len(args) > 3:
                     query = "+".join(args[3:])
@@ -81,7 +85,7 @@ def handle_command(message):
                 to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
                 osu_stats_request = requests.get(to_get)
                 osu_stats = osu_stats_request.json()[0]
-                send_message = "*Stats for %s* (%s) ```" % (
+                send_message = "**Stats for %s** (%s) ```" % (
                     osu_stats["username"],
                     osu_stats["user_id"]
                 )
