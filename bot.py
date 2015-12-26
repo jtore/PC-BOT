@@ -64,7 +64,7 @@ def handle_command(message):
                 if len(args) > 3:
                     query = "+".join(args[3:])
                     query = "&q=" + query + "&oq=" + query
-                send_message = "https://google.com/searchbyimage?&image_url=%s%s" % (
+                send_message = "https://www.google.com/searchbyimage?image_url=%s%s" % (
                     args[2],
                     query
                 )
