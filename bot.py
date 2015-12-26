@@ -22,9 +22,15 @@ usage = {
     "!google <query ...>": "search the web",
     "!display [-u url] [query ...]": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
+    "!lmgtfy <query ...>": "let me google that for you~",
     "!profile <user>": "sends link to osu! profile",
     "!stats <user>": "displays various stats for user",
-    "!roll [range]": "roll dice"
+    "!roll [range]": "roll dice",
+    "!yn [--set [<yes> <no>]]": "yes or no"
+}
+
+yn_set = {
+   "default": ["yes", "no"]
 }
 
 
@@ -48,7 +54,7 @@ def handle_command(message):
 
     if args[0] == "!google":  # Search google
         if len(args) > 1:
-            send_message = "http://www.google.com/search?q=" + "+".join(args[1:])
+            send_message = "http://google.com/search?q=" + "+".join(args[1:])
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!display":  # Link to images
@@ -58,19 +64,24 @@ def handle_command(message):
                 if len(args) > 3:
                     query = "+".join(args[3:])
                     query = "&q=" + query + "&oq=" + query
-                send_message = "https://www.google.com/searchbyimage?&image_url=%s%s" % (
+                send_message = "https://google.com/searchbyimage?&image_url=%s%s" % (
                     args[2],
                     query
                 )
             else:
-                send_message = "http://www.google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
+                send_message = "http://google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lucky":  # Return a link from lucky
         if len(args) > 1:
-            to_get = r"http://www.google.com/search?q=" + r"+".join(args[1:]) + r"&btnI"
+            to_get = r"http://google.com/search?q=" + r"+".join(args[1:]) + r"&btnI"
             result = requests.get(to_get, allow_redirects="false")
             send_message = result.url
+        else:
+            send_message = ":thumbsdown:"
+    elif args[0] == "!lmgtfy":
+        if len(args) > 1:
+            send_message = r"http://lmgtfy.com/q?=" + r"+".join(args[1:])
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile
@@ -115,6 +126,24 @@ def handle_command(message):
             except ValueError:
                 pass
         send_message = "rolls " + str(random.randrange(1, roll_n+1))
+    elif args[0] == "!yn":  # Yes or no
+        yn_list = yn_set["default"]
+
+        # Update language set
+        if len(args) > 1:
+                if args[1] == "--set":
+                    if len(args) > 3:
+                        yn_set[message.channel.id] = [args[2], args[3]]
+                        send_message = "YN set to `" + args[2] + "`, `" + args[3] + "` for this channel"
+                    else:
+                        yn_set[message.channel.id] = yn_set["default"]
+                        send_message = "YN reset for this channel"
+
+        # Update if blank (workaround for --set)
+        if not send_message:
+            if message.channel.id in yn_set:
+                yn_list = yn_set[message.channel.id]
+            send_message = random.choice(yn_list)
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
