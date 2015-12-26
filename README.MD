@@ -6,9 +6,9 @@ Follow the link for install instructions.
 ## Running
 The bot needs two arguments to run, discord login email and password.
 ```
-python bot.py <email> <password>
+python bot.py <email> <password> [osu!api-key]
 ```
-To give the bot osu! API functionality, you need to provide it a valid API key on startup.
+To give the bot osu! API functionality, you need to either provide it a valid API key on startup or give the key via command.
 
 You can choose not to use this functionality.
 
