@@ -93,7 +93,7 @@ def handle_command(message):
                 send_message = "This command is disabled. :thumbsdown:"
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!roll":
+    elif args[0] == "!roll":  # Roll a dice
         roll_n = 100
         if len(args) > 1:
             try:
