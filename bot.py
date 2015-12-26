@@ -17,7 +17,7 @@ osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to
 usage = {
     "!pcbot": "display commands",
     "!google <query ...>": "search the web",
-    "!display <query ...>": "search the web for images",
+    "!display [-u url] [query ...]": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
     "!profile <user>": "sends link to osu! profile",
     "!stats <user>": "displays various stats for user",
@@ -49,7 +49,17 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!display":  # Link to images
         if len(args) > 1:
-            send_message = "http://www.google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
+            if len(args) > 2 and args[1] == "-u":
+                query = ""
+                if len(args) > 3:
+                    query = "+".join(args[3:])
+                    query = "&q=" + query + "&oq=" + query
+                send_message = "https://www.google.com/searchbyimage?&image_url=%s%s" % (
+                    args[2],
+                    query
+                )
+            else:
+                send_message = "http://www.google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lucky":  # Return a link from lucky
@@ -100,7 +110,7 @@ def handle_command(message):
                 roll_n = int(args[1])
             except ValueError:
                 pass
-        send_message = "rolls " + str(random.randrange(roll_n))
+        send_message = "rolls " + str(random.randrange(1, roll_n+1))
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
@@ -118,11 +128,11 @@ def on_message(message):
         client.send_message(message.channel, message.author.mention() + " " + send_message)
 
 
-@client.event
-def on_message_edit(before, after):
-    send_message = handle_command(after)
-    if send_message:
-        client.send_message(after.channel, after.author.mention() + " " + send_message)
+# @client.event
+# def on_message_edit(before, after):
+#     send_message = handle_command(after)
+#     if send_message:
+#         client.send_message(after.channel, after.author.mention() + " " + send_message)
 
 
 @client.event
