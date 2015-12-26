@@ -1,6 +1,7 @@
 import discord
 import requests
 import sys
+import pycountry
 
 client = discord.Client()
 
@@ -86,12 +87,13 @@ def handle_command(message):
                     osu_stats["username"],
                     osu_stats["user_id"]
                 )
-                send_message += "Performance:   %spp (#%s) /#%s" % (
+                send_message += "Performance:   %spp (#%s) /%s #%s" % (
                     osu_stats["pp_raw"],
                     osu_stats["pp_rank"],
+                    pycountry.countries.get(alpha2=osu_stats["country"]).name,
                     osu_stats["pp_country_rank"]
                 )
-                send_message += "\nAccuracy:      %0.6f" % float(osu_stats["accuracy"])
+                send_message += "\nAccuracy:      %0.6f %%" % float(osu_stats["accuracy"])
                 send_message += "\n               %s SS %s S %s A" % (
                     osu_stats["count_rank_ss"],
                     osu_stats["count_rank_s"],
