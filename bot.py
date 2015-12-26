@@ -1,4 +1,6 @@
-import discord, requests, sys
+import discord
+import requests
+import sys
 
 client = discord.Client()
 
