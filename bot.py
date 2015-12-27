@@ -96,7 +96,7 @@ def handle_command(message):
                 user = " ".join(args[1:])
                 to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
                 osu_stats_request = requests.get(to_get)
-                if not osu_stats_request.json()[0]:  # If not found, override send_message and break with return
+                if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
                     return "no such user :thumbsdown:"
                 osu_stats = osu_stats_request.json()[0]
                 send_message = "**Stats for %s** / %s ```" % (
