@@ -75,7 +75,7 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!lucky":  # Return a link from lucky
         if len(args) > 1:
-            to_get = r"http://google.com/search?q=" + r"+".join(args[1:]) + r"&btnI"
+            to_get = r"http://google.com/search?hl=en&q=" + r"+".join(args[1:]) + r"&btnI"
             result = requests.get(to_get, allow_redirects="false")
             send_message = result.url
         else:
