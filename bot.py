@@ -180,25 +180,24 @@ def handle_command(message):
                 yn_list = yn_set[message.channel.id]
             send_message = random.choice(yn_list)
     elif args[0] == "!story":  # Enable or disable story mode
-        if message.channel.id in story_enabled:
+        if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
             story_enabled[message.channel.id] = False
             send_message = "Your %s story: ```%s```" % (
                 random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
                               "genius", "wonderful", "mesmerizing"]),
                 story[message.channel.id]
             )
-        else:
+        else:  # Set to True in channel, also defining if undefined
             story_enabled[message.channel.id] = True
             story[message.channel.id] = ""
             send_message = "Recording *all words* starting with +, write only + to add new paragraph"
-    elif (args[0].startswith("+")) and message.channel.id in story_enabled:
-        if story_enabled[message.channel.id]:
-            for n in args:
-                if n == "+":
-                    story[message.channel.id] += "\n\n"
-                elif len(n) > 1:
-                    if n[0] == "+":
-                        story[message.channel.id] += n[1:] + " "
+    elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):
+        for n in args:
+            if n == "+":
+                story[message.channel.id] += "\n\n"
+            elif len(n) > 1:
+                if n[0] == "+":
+                    story[message.channel.id] += n[1:] + " "
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
