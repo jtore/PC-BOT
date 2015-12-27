@@ -182,8 +182,8 @@ def handle_command(message):
         if story_enabled:
             story_enabled = False
             send_message = "your %s story: ```%s```" % (
-                random.choice["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
-                              "genius", "wonderful", "mesmerizing"],
+                random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
+                              "genius", "wonderful", "mesmerizing"]),
                 story
             )
             story = ""
