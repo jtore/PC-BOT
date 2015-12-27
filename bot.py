@@ -134,10 +134,15 @@ def handle_command(message):
         if len(args) > 1:
                 if args[1] == "--set":
                     if len(args) > 3:
+                        # Add to list
+                        for i in range(2, len(args)):
+                            args[i] = args[i].replace("_", " ")
                         yn_set[message.channel.id] = args[2:]
+
+                        # Send formatted message
                         send_message = "YN set to "
                         for i in range(2, len(args)):
-                            args[i] = "`" + args[i].replace("_", " ") + "`"
+                            args[i] = "`" + args[i] + "`"
                         send_message += ",".join(args[2:])
                         send_message += " for this channel"
                     else:
