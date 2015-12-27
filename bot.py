@@ -183,16 +183,19 @@ def handle_command(message):
     elif args[0] == "!story":  # Enable or disable story mode
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
             story_enabled[message.channel.id] = False
-            send_message = "Your %s story: ```%s```" % (
-                random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
-                              "genius", "wonderful", "mesmerizing"]),
-                story[message.channel.id]
-            )
+            if story[message.channel.id]:
+                send_message = "Your %s story: ```%s```" % (
+                    random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
+                                  "genius", "wonderful", "mesmerizing"]),
+                    story[message.channel.id]
+                )
+            else:
+                send_message = "Your story had no words! :thumbsdown:"
         else:  # Set to True in channel, also defining if undefined
             story_enabled[message.channel.id] = True
             story[message.channel.id] = ""
             send_message = "Recording *all words* starting with +, write only + to add new paragraph"
-    elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):
+    elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):  # Add to story if enabled
         for n in args:
             if n == "+":
                 story[message.channel.id] += "\n\n"
