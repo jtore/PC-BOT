@@ -68,7 +68,8 @@ def handle_command(message):
     global story_enabled, story
 
     args = message.content.split()
-    args[0] = args[0].lower()
+    if not args[0].startswith("+"):
+        args[0] = args[0].lower()
     send_message = ""
 
     # Avoid these comments
