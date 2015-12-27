@@ -158,7 +158,7 @@ def handle_command(message):
 def on_message(message):
     send_message = handle_command(message)
     if send_message:
-        client.send_message(message.channel, message.author.mention() + " " + send_message)
+        client.send_message(message.channel, message.author.mention() + " " + send_message.encode('utf-8'))
 
 
 # @client.event
