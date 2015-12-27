@@ -25,13 +25,16 @@ usage = {
     "!profile <user>": "sends link to osu! profile",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
-    "!yn [--set [<yes> <no>]]": "yes or no"
+    "!yn [--set [<yes> <no>]]": "yes or no",
+    "!story": "toggle story mode"
 }
 
 yn_set = {
    "default": ["yes", "no"]
 }
 
+story_enabled = False;
+story = ""
 
 # Save yn_set to file config.yml
 def save_yn():
@@ -173,6 +176,25 @@ def handle_command(message):
             if message.channel.id in yn_set:
                 yn_list = yn_set[message.channel.id]
             send_message = random.choice(yn_list)
+    elif args[0] == "!story":  # Enable or disable story mode
+        global story_enabled, story
+
+        if story_enabled:
+            story_enabled = False
+            send_message = "your %s story: ```%s```" % (
+                random.choice["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
+                              "genius", "wonderful", "mesmerizing"],
+                story
+            )
+            story = ""
+        else:
+            story_enabled = True
+            send_message = "Recording *all words* starting with +, write only + to add new paragraph"
+    elif (args[0].startswith("+")) and story_enabled:
+        if args[0] == "+":
+            story += "\n\n"
+        else:
+            story += args[0]
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
