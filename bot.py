@@ -97,9 +97,9 @@ def handle_command(message):
                 to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
                 osu_stats_request = requests.get(to_get)
                 osu_stats = osu_stats_request.json()[0]
-                send_message = "**Stats for %s** (%s) ```" % (
+                send_message = "**Stats for %s** / %s ```" % (
                     osu_stats["username"],
-                    osu_stats["user_id"]
+                    "http://osu.ppy.sh/u/" + osu_stats["user_id"]
                 )
                 send_message += "Performance: %spp (#%s) /%s #%s" % (
                     osu_stats["pp_raw"],
