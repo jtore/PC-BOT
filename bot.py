@@ -33,8 +33,8 @@ yn_set = {
    "default": ["yes", "no"]
 }
 
-story_enabled = False
-story = ""
+story_enabled = {}
+story = {}
 
 
 # Save yn_set to file config.yml
@@ -65,6 +65,8 @@ def longest_cmd():
 
 
 def handle_command(message):
+    global story_enabled, story
+
     args = message.content.split()
     args[0] = args[0].lower()
     send_message = ""
@@ -178,26 +180,25 @@ def handle_command(message):
                 yn_list = yn_set[message.channel.id]
             send_message = random.choice(yn_list)
     elif args[0] == "!story":  # Enable or disable story mode
-        global story_enabled, story
-
-        if story_enabled:
-            story_enabled = False
-            send_message = "your %s story: ```%s```" % (
+        if message.channel.id in story_enabled:
+            story_enabled[message.channel.id] = False
+            send_message = "Your %s story: ```%s```" % (
                 random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
                               "genius", "wonderful", "mesmerizing"]),
-                story
+                story[message.channel.id]
             )
         else:
-            story_enabled = True
-            story = ""
+            story_enabled[message.channel.id] = True
+            story[message.channel.id] = ""
             send_message = "Recording *all words* starting with +, write only + to add new paragraph"
-    elif (args[0].startswith("+")) and story_enabled:
-        for n in args:
-            if n == "+":
-                story += "\n\n"
-            elif len(n) > 1:
-                if n[0] == "+":
-                    story += n[1:] + " "
+    elif (args[0].startswith("+")) and message.channel.id in story_enabled:
+        if story_enabled[message.channel.id]:
+            for n in args:
+                if n == "+":
+                    story[message.channel.id] += "\n\n"
+                elif len(n) > 1:
+                    if n[0] == "+":
+                        story[message.channel.id] += n[1:] + " "
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
