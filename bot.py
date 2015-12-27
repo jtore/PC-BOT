@@ -150,6 +150,8 @@ def handle_command(message):
         for k, v in usage.items():
             send_message += "\n" + k + " "*(space_len - len(k)) + v
         send_message += "```"
+    elif args[0] == "?trigger":  # Show trigger
+        send_message = "Trigger is !"
 
     return send_message
 
