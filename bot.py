@@ -36,7 +36,7 @@ yn_set = {
 # Save yn_set to file config.yml
 def save_yn():
     file = open("config.yml", "w")
-    file.write(yaml.dump(yn_set))
+    file.write(yaml.safe_dump(yn_set))
     file.close()
 
 
