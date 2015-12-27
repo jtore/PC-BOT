@@ -137,7 +137,7 @@ def handle_command(message):
                         yn_set[message.channel.id] = args[2:]
                         send_message = "YN set to "
                         for i in range(2, len(args)):
-                            args[i] = "`" + args[i] + "`"
+                            args[i] = "`" + args[i].replace("_", " ") + "`"
                         send_message += ",".join(args[2:])
                         send_message += " for this channel"
                     else:
