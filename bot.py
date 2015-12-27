@@ -33,8 +33,9 @@ yn_set = {
    "default": ["yes", "no"]
 }
 
-story_enabled = False;
+story_enabled = False
 story = ""
+
 
 # Save yn_set to file config.yml
 def save_yn():
@@ -186,9 +187,9 @@ def handle_command(message):
                               "genius", "wonderful", "mesmerizing"]),
                 story
             )
-            story = ""
         else:
             story_enabled = True
+            story = ""
             send_message = "Recording *all words* starting with +, write only + to add new paragraph"
     elif (args[0].startswith("+")) and story_enabled:
         for n in args:
@@ -196,7 +197,7 @@ def handle_command(message):
                 story += "\n\n"
             elif len(n) > 1:
                 if n[0] == "+":
-                    story += n[1:]
+                    story += n[1:] + " "
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
