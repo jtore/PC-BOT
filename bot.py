@@ -3,6 +3,7 @@ import requests
 import sys
 import pycountry
 import random
+import datetime
 
 client = discord.Client()
 
@@ -158,16 +159,16 @@ def handle_command(message):
 
 @client.event
 def on_message(message):
-    send_message = handle_command(message)
+    send_message = ""
+    if message.content:
+        send_message = handle_command(message)
     if send_message:
-        client.send_message(message.channel, message.author.mention() + " " + send_message.encode('utf-8'))
-
-
-# @client.event
-# def on_message_edit(before, after):
-#     send_message = handle_command(after)
-#     if send_message:
-#         client.send_message(after.channel, after.author.mention() + " " + send_message)
+        send_message = send_message.encode('utf-8')
+        print("%s> %s" % (
+            datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
+            send_message
+        ))
+        client.send_message(message.channel, message.author.mention() + " " + send_message)
 
 
 @client.event
