@@ -164,8 +164,9 @@ def on_message(message):
         send_message = handle_command(message)
     if send_message:
         send_message = send_message.encode('utf-8')
-        print("%s> %s" % (
+        print("%s@%s> %s" % (
             datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
+            message.author.name,
             send_message
         ))
         client.send_message(message.channel, message.author.mention() + " " + send_message)
