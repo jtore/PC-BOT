@@ -167,7 +167,7 @@ def on_message(message):
         print("%s@%s> %s" % (
             datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
             message.author.name,
-            send_message
+            message.content
         ))
         client.send_message(message.channel, message.author.mention() + " " + send_message)
 
