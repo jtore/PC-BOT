@@ -1,6 +1,8 @@
 # PC BOT
 BOT for discord built with [discord.py][parent].
 Follow the link for install instructions.
+
+**This bot is only supported for python 2.7 (apparently)**
 [parent]: https://github.com/Rapptz/discord.py
 
 ## Running
