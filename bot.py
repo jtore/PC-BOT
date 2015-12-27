@@ -1,9 +1,7 @@
 import discord
-import requests
-import sys
+import requests, sys, os, random, datetime
 import pycountry
-import random
-import datetime
+import yaml
 
 client = discord.Client()
 
@@ -33,6 +31,24 @@ usage = {
 yn_set = {
    "default": ["yes", "no"]
 }
+
+
+# Save yn_set to file config.yml
+def save_yn():
+    file = open("config.yml", "w")
+    file.write(yaml.dump(yn_set))
+    file.close()
+
+
+# Load yn_set from file config.yml
+def load_yn():
+    global yn_set
+
+    if os.path.isfile("config.yml"):
+        with open("config.yml", "r") as file:
+            yn_set = yaml.load(file.read())
+    else:
+        save_yn()
 
 
 # Return length of longest keyword for printing
@@ -150,6 +166,7 @@ def handle_command(message):
                     else:
                         yn_set[message.channel.id] = yn_set["default"]
                         send_message = "YN reset for this channel"
+                    save_yn()
 
         # Update if blank (workaround for --set)
         if not send_message:
@@ -190,5 +207,6 @@ def on_ready():
     print(client.user.id)
     print('------')
 
+    load_yn()
 
 client.run()
