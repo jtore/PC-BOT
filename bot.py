@@ -2,6 +2,7 @@ import discord
 import requests, sys, os, random, datetime
 import pycountry
 import yaml
+import cleverbot
 
 client = discord.Client()
 
@@ -36,6 +37,8 @@ yn_set = {
 story_enabled = {}
 story = {}
 
+cleverbot_client = cleverbot.Cleverbot()  # Set up cleverbot client
+
 
 # Save yn_set to file config.yml
 def save_yn():
@@ -64,6 +67,7 @@ def longest_cmd():
     return cmd_len
 
 
+# Split string into list and handle keywords
 def handle_command(message):
     global story_enabled, story
 
@@ -211,7 +215,16 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
-    elif args[0] == "!help":
+    elif client.user in message.mentions and not message.mensions_everyone:     # If bot is mentioned,
+                                                                                # perform cleverbot command
+        cleverbot_question = ""
+        for i in range(0, len(args)):
+            if (not args[i].startswith("<@")) and (not args[i].endswith(">")):  # Remove any mentions (there might be
+                                                                                # a more efficient way to do this)
+                cleverbot_question += args[i]
+        if cleverbot_question:  # Make sure message was received
+            send_message = cleverbot_client.ask(cleverbot_question)
+    elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
