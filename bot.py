@@ -215,7 +215,7 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
-    elif client.user in message.mentions and not message.mention_everyone:     # If bot is mentioned,
+    elif client.user in message.mentions and not message.mention_everyone:      # If bot is mentioned,
                                                                                 # perform cleverbot command
         cleverbot_question = ""
         for i in range(0, len(args)):
@@ -223,7 +223,7 @@ def handle_command(message):
                                                                                 # a more efficient way to do this)
                 cleverbot_question += args[i] + " "
         if cleverbot_question:  # Make sure message was received
-            send_message = cleverbot_client.ask(cleverbot_question)
+            send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
     elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
