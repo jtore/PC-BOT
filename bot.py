@@ -209,7 +209,7 @@ def handle_command(message):
 
         # Return value from list
         if not send_message:
-            if message.channel.id in yn_set:
+            if yn_set.get(message.channel.id):
                 yn_list = yn_set.get(message.channel.id)
             send_message = random.choice(yn_list)
     elif args[0] == "!story":  # Enable or disable story mode
