@@ -215,7 +215,7 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
-    elif client.user in message.mentions and not message.mentions_everyone:     # If bot is mentioned,
+    elif client.user in message.mentions and not message.mention_everyone:     # If bot is mentioned,
                                                                                 # perform cleverbot command
         cleverbot_question = ""
         for i in range(0, len(args)):
