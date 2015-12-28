@@ -58,7 +58,7 @@ usage = {
     "!profile [-m | --me] <user>": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
-    "!yn [--set [<yes> <no>]]": "yes or no",
+    "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
     "!story": "toggle story mode"
 }
 
@@ -204,35 +204,64 @@ def handle_command(message):
 
         # Update language set
         if len(args) > 1:
-                if args[1] == "--set":
+                if (args[1] == "--set") or (args[1] == "--global-set"):
+                    globally = False
+                    if args[1] == "--global-set":
+                        globally = True
                     # Clone settings for mentioned channel
                     if len(message.channel_mentions) > 0:
                         mentioned_channel = message.channel_mentions[0]  # Set to first one, ignore other mentions
                         if yn_set.get(mentioned_channel.id):
-                            yn_set.set(message.channel.id, mentioned_channel.id)
-                            send_message = "YN cloned from " + mentioned_channel.mention()
+                            # Clone settings to current channel
+                            if args[1] == "--set":
+                                yn_set.set(message.channel.id, mentioned_channel.id)
+                            # Clone settings as default in current server
+                            elif args[1] == "--global-set":
+                                yn_set.set(message.server.id, mentioned_channel.id)
+                            send_message = "YN " + "globally " if globally else "" + "cloned from " \
+                                                                                + mentioned_channel.mention()
                     else:
                         if len(args) > 3:
                             # Add to list
                             for i in range(2, len(args)):
                                 args[i] = args[i].replace("_", " ")
-                            yn_set.set(message.channel.id, args[2:])
+
+                            # Apply list to channel
+                            if args[1] == "--set":
+                                yn_set.set(message.channel.id, args[2:])
+                            # Apply list to server
+                            elif args[1] == "--global-set":
+                                yn_set.set(message.server.id, args[2:])
 
                             # Send formatted message
                             send_message = "YN set to "
                             for i in range(2, len(args)):
                                 args[i] = "`" + args[i] + "`"
                             send_message += ",".join(args[2:])
-                            send_message += " for this channel"
+                            send_message += " for this " + "server" if globally else "channel"
                         else:
-                            yn_set.set(message.channel.id, yn_set.get("default"))
-                            send_message = "YN reset for this channel"
+                            # Reset channel settings
+                            if args[1] == "--set":
+                                yn_set.set(message.channel.id, yn_set.get("default"))
+                            # Reset server settings
+                            elif args[1] == "--global-set":
+                                yn_set.set(message.server.id, yn_set.get("default"))
+                            send_message = "YN reset for this " + "server" if globally else "channel"
                     yn_set.save()
 
         # Return value from list
         if not send_message:
-            if yn_set.get(message.channel.id):
+            yn_server = yn_set.get(message.server.id)
+            yn_channel = yn_set.get(message.channel.id)
+
+            # Use global server settings if set and not equal to default settings
+            if yn_server and not yn_server == yn_set.get("default"):
+                yn_list = yn_server
+            # Use channel settings if set and not equal to default settings, overriding any global setting
+            if yn_channel and not yn_channel == yn_set.get("default"):
                 yn_list = yn_set.get(message.channel.id)
+
+            # Choose from list and send
             send_message = random.choice(yn_list)
     elif args[0] == "!story":  # Enable or disable story mode
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
