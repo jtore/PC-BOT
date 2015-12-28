@@ -174,11 +174,11 @@ def handle_command(message):
                 osu_users.set(message.author.id, user)
                 osu_users.save()
 
-            send_message = r"http://osu.ppy.sh/u/" + user
+            send_message = "http://osu.ppy.sh/u/%s" % user
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = r"http://osu.ppy.sh/u/" + user
+                send_message = "http://osu.ppy.sh/u/%s" % user
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown:"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
