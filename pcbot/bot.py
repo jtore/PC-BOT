@@ -1,8 +1,9 @@
 import discord
 import requests, sys, os, random, datetime
 import pycountry
-import yaml
 import cleverbot
+from .config import Config
+
 
 client = discord.Client()
 
@@ -31,9 +32,10 @@ usage = {
 }
 
 # Store !yn info in multiple channels
-yn_set = {
-   "default": ["yes", "no"]
-}
+yn_set = Config(
+        config={"default": ["yes", "no"]},
+        file="yn.yml"
+)
 
 # Store story info in multiple channels
 story_enabled = {}
@@ -41,24 +43,6 @@ story = {}
 
 # Initialize cleverbot (Apparently didn't support multiple instances)
 cleverbot_client = cleverbot.Cleverbot()
-
-
-# Save yn_set to file config.yml
-def save_yn():
-    file = open("config.yml", "w")
-    file.write(yaml.safe_dump(yn_set, encoding="utf-8", allow_unicode=True))
-    file.close()
-
-
-# Load yn_set from file config.yml
-def load_yn():
-    global yn_set
-
-    if os.path.isfile("config.yml"):
-        with open("config.yml", "r") as file:
-            yn_set = yaml.load(file.read())
-    else:
-        save_yn()
 
 
 # Return length of longest keyword for printing
@@ -160,7 +144,7 @@ def handle_command(message):
                 pass
         send_message = "rolls " + str(random.randrange(1, roll_n+1))
     elif args[0] == "!yn":  # Yes or no
-        yn_list = yn_set["default"]
+        yn_list = yn_set.get("default")
 
         # Update language set
         if len(args) > 1:
@@ -169,14 +153,14 @@ def handle_command(message):
                     if len(message.channel_mentions) > 0:
                         mentioned_channel = message.channel_mentions[0]  # Set to first one, ignore other mentions
                         if yn_set.get(mentioned_channel.id):
-                            yn_set[message.channel.id] = yn_set[mentioned_channel.id]
+                            yn_set.set(message.channel.id, mentioned_channel.id)
                             send_message = "YN cloned from " + mentioned_channel.mention()
                     else:
                         if len(args) > 3:
                             # Add to list
                             for i in range(2, len(args)):
                                 args[i] = args[i].replace("_", " ")
-                            yn_set[message.channel.id] = args[2:]
+                            yn_set.set(message.channel.id, args[2:])
 
                             # Send formatted message
                             send_message = "YN set to "
@@ -185,14 +169,14 @@ def handle_command(message):
                             send_message += ",".join(args[2:])
                             send_message += " for this channel"
                         else:
-                            yn_set[message.channel.id] = yn_set["default"]
+                            yn_set.set(message.channel.id, yn_set.get("default"))
                             send_message = "YN reset for this channel"
-                    save_yn()
+                    yn_set.save()
 
-        # Update if blank (workaround for --set)
+        # Return value from list
         if not send_message:
             if message.channel.id in yn_set:
-                yn_list = yn_set[message.channel.id]
+                yn_list = yn_set.get(message.channel.id)
             send_message = random.choice(yn_list)
     elif args[0] == "!story":  # Enable or disable story mode
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
@@ -265,6 +249,6 @@ def on_ready():
     print(client.user.id)
     print('------')
 
-    load_yn()
+    yn_set.load()
 
 client.run()
