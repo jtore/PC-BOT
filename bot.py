@@ -9,14 +9,11 @@ import pycountry
 import cleverbot
 
 
+# Sets up config files for saving and loading
 class Config:
     def __init__(self, config, file="config.yml"):
         self.config = config
-        self.default_config = self.config
         self.file = file
-
-    def reset(self):
-        self.config = self.default_config
 
     def save(self):
         file = open(self.file, "w")
@@ -58,7 +55,7 @@ usage = {
     "!display [-u url] [query ...]": "search the web for images",
     "!lucky <query ...>": "retrieve a link",
     "!lmgtfy <query ...>": "let me google that for you~",
-    "!profile <user>": "sends link to osu! profile",
+    "!profile [-m | --me] <user>": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
     "!yn [--set [<yes> <no>]]": "yes or no",
@@ -67,8 +64,13 @@ usage = {
 
 # Store !yn info in multiple channels
 yn_set = Config(
-        config={"default": ["yes", "no"]},
-        file="yn.yml"
+    config={"default": ["yes", "no"]},
+    file="yn.yml"
+)
+
+osu_users = Config(
+    config={},
+    file="osu-users.yml"
 )
 
 # Store story info in multiple channels
@@ -86,6 +88,37 @@ def longest_cmd():
         if len(k) > cmd_len:
             cmd_len = len(k)
     return cmd_len
+
+
+def get_osu_stats(user):
+    if osu_api:
+        to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
+        osu_stats_request = requests.get(to_get)
+        if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
+            return "no such user :thumbsdown:"
+        osu_stats = osu_stats_request.json()[0]
+        send_message = "**Stats for %s** / %s ```" % (
+            osu_stats["username"],
+            "http://osu.ppy.sh/u/" + osu_stats["user_id"]
+        )
+        send_message += "Performance: %spp (#%s) /%s #%s" % (
+            osu_stats["pp_raw"],
+            osu_stats["pp_rank"],
+            pycountry.countries.get(alpha2=osu_stats["country"]).name,
+            osu_stats["pp_country_rank"]
+        )
+        send_message += "\nAccuracy:    %0.6f %%" % float(osu_stats["accuracy"])
+        send_message += "\n             %s SS %s S %s A" % (
+            osu_stats["count_rank_ss"],
+            osu_stats["count_rank_s"],
+            osu_stats["count_rank_a"]
+        )
+        send_message += "\nPlaycount:   " + osu_stats["playcount"]
+        send_message += "```"
+    else:
+        send_message = "This command is disabled. :thumbsdown:"
+
+    return send_message
 
 
 # Split string into list and handle keywords
@@ -133,42 +166,31 @@ def handle_command(message):
             send_message = r"http://lmgtfy.com/q?=" + r"+".join(args[1:])
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!profile":  # Link to osu! profile
+    elif args[0] == "!profile":  # Link to osu! profile or set author as user
         if len(args) > 1:
-            send_message = r"http://osu.ppy.sh/u/" + str(args[1])
+            user = args[1:]
+            if (args[1] == "-m" or args[1] == "--me") and (len(args) > 2):
+                user = args[2:]
+                osu_users.set(message.author.id, user)
+                osu_users.save()
+
+            send_message = r"http://osu.ppy.sh/u/" + user
         else:
-            send_message = ":thumbsdown:"
+            user = osu_users.get(message.author.id)
+            if user:
+                send_message = r"http://osu.ppy.sh/u/" + user
+            else:
+                send_message = "You are not associated with any osu! user :thumbsdown:"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
         if len(args) > 1:
-            if osu_api:
-                user = " ".join(args[1:])
-                to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
-                osu_stats_request = requests.get(to_get)
-                if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
-                    return "no such user :thumbsdown:"
-                osu_stats = osu_stats_request.json()[0]
-                send_message = "**Stats for %s** / %s ```" % (
-                    osu_stats["username"],
-                    "http://osu.ppy.sh/u/" + osu_stats["user_id"]
-                )
-                send_message += "Performance: %spp (#%s) /%s #%s" % (
-                    osu_stats["pp_raw"],
-                    osu_stats["pp_rank"],
-                    pycountry.countries.get(alpha2=osu_stats["country"]).name,
-                    osu_stats["pp_country_rank"]
-                )
-                send_message += "\nAccuracy:    %0.6f %%" % float(osu_stats["accuracy"])
-                send_message += "\n             %s SS %s S %s A" % (
-                    osu_stats["count_rank_ss"],
-                    osu_stats["count_rank_s"],
-                    osu_stats["count_rank_a"]
-                )
-                send_message += "\nPlaycount:   " + osu_stats["playcount"]
-                send_message += "```"
-            else:
-                send_message = "This command is disabled. :thumbsdown:"
+            user = args[1:]
+            send_message = get_osu_stats(user)
         else:
-            send_message = ":thumbsdown:"
+            user = osu_users.get(message.author.id)
+            if user:
+                send_message = get_osu_stats(user)
+            else:
+                send_message = "You are not associated with any osu! user :thumbsdown:"
     elif args[0] == "!roll":  # Roll a dice
         roll_n = 100
         if len(args) > 1:
@@ -284,5 +306,6 @@ def on_ready():
     print('------')
 
     yn_set.load()
+    osu_users.load()
 
 client.run()
