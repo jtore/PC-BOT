@@ -95,7 +95,7 @@ def get_osu_stats(user):
         to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
         osu_stats_request = requests.get(to_get)
         if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
-            return "no such user :thumbsdown:"
+            return "No such user :thumbsdown:"
         osu_stats = osu_stats_request.json()[0]
         send_message = "**Stats for %s** / %s ```" % (
             osu_stats["username"],
@@ -168,22 +168,22 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile or set author as user
         if len(args) > 1:
-            user = str(args[1:])
+            user = args[1:]
             if (args[1] == "-m" or args[1] == "--me") and (len(args) > 2):
                 user = args[2:]
                 osu_users.set(message.author.id, user)
                 osu_users.save()
 
-            send_message = r"http://osu.ppy.sh/u/%s" + user
+            send_message = r"http://osu.ppy.sh/u/" + str(user)
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = r"http://osu.ppy.sh/u/" + user
+                send_message = r"http://osu.ppy.sh/u/" + str(user)
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown:"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
         if len(args) > 1:
-            user = str(args[1:])
+            user = args[1:]
             send_message = get_osu_stats(user)
         else:
             user = osu_users.get(message.author.id)
