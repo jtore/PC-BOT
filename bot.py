@@ -168,22 +168,22 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile or set author as user
         if len(args) > 1:
-            user = args[1:]
+            user = " ".join(args[1:])
             if (args[1] == "-m" or args[1] == "--me") and (len(args) > 2):
-                user = args[2:]
+                user = " ".join(args[2:])
                 osu_users.set(message.author.id, user)
                 osu_users.save()
 
-            send_message = r"http://osu.ppy.sh/u/" + str(user)
+            send_message = r"http://osu.ppy.sh/u/" + user
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = r"http://osu.ppy.sh/u/" + str(user)
+                send_message = r"http://osu.ppy.sh/u/" + user
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown:"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
         if len(args) > 1:
-            user = args[1:]
+            user = " ".join(args[1:])
             send_message = get_osu_stats(user)
         else:
             user = osu_users.get(message.author.id)
