@@ -227,6 +227,7 @@ def handle_command(message):
 
         # Make sure message was received
         if cleverbot_question:
+            client.send_typing(message.channel)
             send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
     elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
