@@ -180,7 +180,7 @@ def handle_command(message):
                         else:
                             yn_set[message.channel.id] = yn_set["default"]
                             send_message = "YN reset for this channel"
-                        save_yn()
+                    save_yn()
 
         # Update if blank (workaround for --set)
         if not send_message:
