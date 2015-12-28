@@ -39,8 +39,8 @@ yn_set = {
 story_enabled = {}
 story = {}
 
-# Store cleverbot clients in multiple channels
-cleverbot_client = {}
+# Initialize cleverbot (Apparently didn't support multiple instances)
+cleverbot_client = cleverbot.Cleverbot()
 
 
 # Save yn_set to file config.yml
@@ -219,10 +219,6 @@ def handle_command(message):
                 else:
                     story[message.channel.id] += n + " "
     elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
-        # Init cleverbot client
-        if message.channel.id not in cleverbot_client:
-            cleverbot_client[message.channel.id] = cleverbot.Cleverbot()
-
         # Get question asked
         cleverbot_question = ""
         for i in range(0, len(args)):
@@ -231,7 +227,7 @@ def handle_command(message):
 
         # Make sure message was received
         if cleverbot_question:
-            send_message = cleverbot_client[message.channel.id].ask(cleverbot_question.encode('utf-8'))
+            send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
     elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
