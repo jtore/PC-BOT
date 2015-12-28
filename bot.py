@@ -35,6 +35,9 @@ class Config:
             return self.config.get(value)
         return self.config
 
+    def remove(self, index):
+        self.config.pop(index, None)
+
 
 client = discord.Client()
 
@@ -242,10 +245,11 @@ def handle_command(message):
                         else:
                             # Reset channel settings
                             if args[1] == "--set":
-                                yn_set.set(message.channel.id, yn_set.get("default"))
+                                yn_set.remove(message.channel.id)
                             # Reset server settings
                             elif args[1] == "--global-set":
-                                yn_set.set(message.server.id, yn_set.get("default"))
+                                yn_set.remove(message.server.id)
+
                             send_message = "YN reset for this " + ("server" if globally else "channel")
                     yn_set.save()
 
@@ -255,11 +259,12 @@ def handle_command(message):
             yn_channel = yn_set.get(message.channel.id)
 
             # Use global server settings if set and not equal to default settings
-            if yn_server and not yn_server == yn_set.get("default"):
+            if yn_server:
                 yn_list = yn_server
+
             # Use channel settings if set and not equal to default settings, overriding any global setting
-            if yn_channel and not yn_channel == yn_set.get("default"):
-                yn_list = yn_set.get(message.channel.id)
+            if yn_channel:
+                yn_list = yn_channel
 
             # Choose from list and send
             send_message = random.choice(yn_list)
