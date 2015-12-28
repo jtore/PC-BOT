@@ -30,14 +30,17 @@ usage = {
     "!story": "toggle story mode"
 }
 
+# Store !yn info in multiple channels
 yn_set = {
    "default": ["yes", "no"]
 }
 
+# Store story info in multiple channels
 story_enabled = {}
 story = {}
 
-cleverbot_client = cleverbot.Cleverbot()  # Set up cleverbot client
+# Store cleverbot clients in multiple channels
+cleverbot_client = {}
 
 
 # Save yn_set to file config.yml
@@ -215,15 +218,20 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
-    elif client.user in message.mentions and not message.mention_everyone:      # If bot is mentioned,
-                                                                                # perform cleverbot command
+    elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
+        # Init cleverbot client
+        if message.channel.id not in cleverbot_client:
+            cleverbot_client[message.channel.id] = cleverbot.Cleverbot()
+
+        # Get question asked
         cleverbot_question = ""
         for i in range(0, len(args)):
-            if (not args[i].startswith("<@")) and (not args[i].endswith(">")):  # Remove any mentions (there might be
-                                                                                # a more efficient way to do this)
+            if (not args[i].startswith("<@")) and (not args[i].endswith(">")):  # Remove any mentions
                 cleverbot_question += args[i] + " "
-        if cleverbot_question:  # Make sure message was received
-            send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
+
+        # Make sure message was received
+        if cleverbot_question:
+            send_message = cleverbot_client[message.channel.id].ask(cleverbot_question.encode('utf-8'))
     elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
