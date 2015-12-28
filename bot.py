@@ -221,7 +221,7 @@ def handle_command(message):
         for i in range(0, len(args)):
             if (not args[i].startswith("<@")) and (not args[i].endswith(">")):  # Remove any mentions (there might be
                                                                                 # a more efficient way to do this)
-                cleverbot_question += args[i]
+                cleverbot_question += args[i] + " "
         if cleverbot_question:  # Make sure message was received
             send_message = cleverbot_client.ask(cleverbot_question)
     elif args[0] == "!help":  # Display  help command
