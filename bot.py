@@ -206,7 +206,7 @@ def handle_command(message):
         for n in args:
             if n == "+":
                 story[message.channel.id] += "\n\n"
-            elif len(n) > 1:
+            elif len(n) > 0:
                 if n[0] == "+":
                     story[message.channel.id] += n[1:] + " "
                 else:
