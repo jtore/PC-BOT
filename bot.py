@@ -209,6 +209,8 @@ def handle_command(message):
             elif len(n) > 1:
                 if n[0] == "+":
                     story[message.channel.id] += n[1:] + " "
+    elif args[0] == "!help":
+        send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
         space_len = longest_cmd() + 4
