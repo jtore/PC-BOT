@@ -218,8 +218,8 @@ def handle_command(message):
                             # Clone settings as default in current server
                             elif args[1] == "--global-set":
                                 yn_set.set(message.server.id, mentioned_channel.id)
-                            send_message = "YN " + "globally " if globally else "" + "cloned from " \
-                                                                                + mentioned_channel.mention()
+                            send_message = "YN " + ("globally " if globally else "") + "cloned from " + \
+                                           mentioned_channel.mention()
                     else:
                         if len(args) > 3:
                             # Add to list
@@ -238,7 +238,7 @@ def handle_command(message):
                             for i in range(2, len(args)):
                                 args[i] = "`" + args[i] + "`"
                             send_message += ",".join(args[2:])
-                            send_message += " for this " + "server" if globally else "channel"
+                            send_message += " for this " + ("server" if globally else "channel")
                         else:
                             # Reset channel settings
                             if args[1] == "--set":
@@ -246,7 +246,7 @@ def handle_command(message):
                             # Reset server settings
                             elif args[1] == "--global-set":
                                 yn_set.set(message.server.id, yn_set.get("default"))
-                            send_message = "YN reset for this " + "server" if globally else "channel"
+                            send_message = "YN reset for this " + ("server" if globally else "channel")
                     yn_set.save()
 
         # Return value from list
