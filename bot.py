@@ -425,6 +425,8 @@ def handle_command(message):
                     server_settings.config[message.server.id]["reddit"] = True      # :(
                     send_message = "*Automatic subreddit linking* ***enabled*** *for this server*"
 
+                server_settings.save()
+
                 return send_message
 
         # Print list of commands with description
