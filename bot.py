@@ -36,7 +36,7 @@ class Config:
         return self.config
 
     def remove(self, index):
-        self.config.pop(index, None)
+        return self.config.pop(index, False)
 
 
 client = discord.Client()
@@ -181,8 +181,10 @@ def handle_command(message):
                     osu_users.set(message.author.id, user)
                     append_message = "\nUser " + user + " associated with discord"
                 else:
-                    osu_users.remove(message.author.id)
-                    send_message = "Removed discord association."
+                    if osu_users.remove(message.author.id):
+                        send_message = "Removed discord association."
+                    else:
+                        send_message = "Please use `!profile -m <user>`"
                 osu_users.save()
 
             if not send_message:
