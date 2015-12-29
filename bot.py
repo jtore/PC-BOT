@@ -157,15 +157,26 @@ def handle_command(message):
                 send_message = "http://google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!lucky":  # Return first link from google search
+    elif args[0] == "!lucky":  # Return first link from google search (deprecated API, allows few searches)
         if len(args) > 1:
             search_string = "+".join(args[1:])
             result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + search_string)
-            results = result_string.json()["responseData"]["results"]
-            if len(results) > 0:
-                send_message = results[0]["unescapedUrl"]  # Send URL of the first result
+            result = result_string.json()
+            results = []
+            if not result["responseData"]:
+                if result["responseStatus"] == 403:
+                    send_message = "Please refrain from using lucky search too much :thumbsdown:"
+                else:
+                    send_message = "Unknown error :thumbsdown:"
+                return send_message
             else:
-                send_message = ":thumbsdown:"
+                results = result["responseData"]["results"]
+
+            # Send URL of the first result
+            if len(results) > 0:
+                send_message = results[0]["unescapedUrl"]
+            else:
+                send_message = "No results :thumbsdown:"
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lmgtfy":
