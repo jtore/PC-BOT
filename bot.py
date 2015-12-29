@@ -183,7 +183,7 @@ def handle_command(message):
             if user:
                 send_message = r"http://osu.ppy.sh/u/" + user
             else:
-                send_message = "You are not associated with any osu! user :thumbsdown:"
+                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
         if len(args) > 1:
             user = " ".join(args[1:])
@@ -193,7 +193,7 @@ def handle_command(message):
             if user:
                 send_message = get_osu_stats(user)
             else:
-                send_message = "You are not associated with any osu! user :thumbsdown:"
+                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
     elif args[0] == "!roll":  # Roll a dice
         roll_n = 100
         if len(args) > 1:
