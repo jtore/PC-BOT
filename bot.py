@@ -28,7 +28,7 @@ class Config:
 
     def save(self):
         file = open(self.filename, "w")
-        file.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
+        file.write(yaml.dump(self.config, encoding="utf-8", allow_unicode=True))
         file.close()
 
     def load(self):
@@ -453,7 +453,7 @@ def handle_command(message):
         if server_settings.get(reddit_enabled).get("reddit"):
             subreddit = subreddit_in(args)
             search_string = "https://www.reddit.com/r/" + subreddit
-            search_request = requests.get(search_string)
+            search_request = requests.get(search_string, allow_redirects=True)
             send_message = search_request.url
 
     # Perform cleverbot command on mention
