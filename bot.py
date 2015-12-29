@@ -157,16 +157,17 @@ def handle_command(message):
                 send_message = "http://google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!lucky":  # Return a link from lucky
+    elif args[0] == "!lucky":  # Return first link from google search
         if len(args) > 1:
-            to_get = r"http://google.com/search?hl=en&q=" + r"+".join(args[1:]) + r"&btnI=I"
-            result = requests.get(to_get, allow_redirects="false")
-            send_message = result.url
+            search_string = "+".join(args[1:])
+            result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + search_string)
+            result = result_string.json()
+            send_message = result["responseData"]["results"][0]["url"]  # Send URL of the first result
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lmgtfy":
         if len(args) > 1:
-            send_message = r"http://lmgtfy.com/q?=" + r"+".join(args[1:])
+            send_message = "http://lmgtfy.com/q?=" + r"+".join(args[1:])
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile or set author as user
