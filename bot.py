@@ -344,15 +344,18 @@ def handle_command(message):
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
         # Give link to git
-        if args.get(1) == "--git":
-            send_message = __git_url__
-        else:
-            send_message = "Commands: ```"
-            longest_cmd = len(max(usage))  # Return length of longest key
-            space_len = longest_cmd + 4
-            for k, v in usage.items():
-                send_message += "\n" + k + " "*(space_len - len(k)) + v
-            send_message += "```"
+        if len(args) > 1:
+            if args[1] == "--git":
+                send_message = __git_url__
+                return send_message
+
+        # Print list of commands with description
+        send_message = "Commands: ```"
+        longest_cmd = len(max(usage))  # Return length of longest key
+        space_len = longest_cmd + 4
+        for k, v in usage.items():
+            send_message += "\n" + k + " "*(space_len - len(k)) + v
+        send_message += "```"
     elif args[0] == "?trigger":  # Show trigger
         send_message = "Trigger is !"
     elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
