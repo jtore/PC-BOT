@@ -22,18 +22,18 @@ class Config:
         config -- Initializer for lists or dictionaries (required)
         file -- Filename for the config, specified without extension (default "config")
     """
-    def __init__(self, config, file="config"):
+    def __init__(self, config, filename="config"):
         self.config = config
-        self.file = "{}.yml".format(file)
+        self.filename = "{}.yml".format(filename)
 
     def save(self):
-        file = open(self.file, "w")
+        file = open(self.filename, "w")
         file.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
         file.close()
 
     def load(self):
-        if os.path.isfile(self.file):
-            with open(self.file, "r") as file:
+        if os.path.isfile(self.filename):
+            with open(self.filename, "r") as file:
                 self.config = yaml.load(file.read())
         else:
             self.save()
@@ -112,13 +112,13 @@ usage = {
 # Store !yn info in multiple channels
 yn_set = Config(
     config={"default": ["yes", "no"]},
-    file="yn.yml"
+    filename="yn.yml"
 )
 
 # Store osu! user links
 osu_users = Config(
     config={},
-    file="osu-users.yml"
+    filename="osu-users.yml"
 )
 
 # Store story info in multiple channels
