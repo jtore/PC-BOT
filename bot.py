@@ -161,8 +161,11 @@ def handle_command(message):
         if len(args) > 1:
             search_string = "+".join(args[1:])
             result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + search_string)
-            result = result_string.json()
-            send_message = result["responseData"]["results"][0]["url"]  # Send URL of the first result
+            results = result_string.json()["responseData"]["results"]
+            if len(results) > 0:
+                send_message = results[0]["unescapedUrl"]  # Send URL of the first result
+            else:
+                send_message = ":thumbsdown:"
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lmgtfy":
