@@ -56,7 +56,7 @@ usage = {
     "!pcbot": "display commands",
     "!google <query ...>": "search the web",
     "!display [-u url] [query ...]": "search the web for images",
-    "!lucky <query ...>": "retrieve a link",
+    "!lucky <query ...>": "retrieve a link (please refrain from using this too much)",
     "!lmgtfy <query ...>": "let me google that for you~",
     "!profile [-m | --me] <user>": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
@@ -324,6 +324,16 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
+    elif args[0] == "!help":  # Display  help command
+        send_message = "Help is `!pcbot`"
+    elif args[0] == "!pcbot":  # Show help
+        send_message = "Commands: ```"
+        space_len = longest_cmd() + 4
+        for k, v in usage.items():
+            send_message += "\n" + k + " "*(space_len - len(k)) + v
+        send_message += "```"
+    elif args[0] == "?trigger":  # Show trigger
+        send_message = "Trigger is !"
     elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
         # Get question asked
         cleverbot_question = ""
@@ -335,16 +345,6 @@ def handle_command(message):
         if cleverbot_question:
             client.send_typing(message.channel)
             send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
-    elif args[0] == "!help":  # Display  help command
-        send_message = "Help is `!pcbot`"
-    elif args[0] == "!pcbot":  # Show help
-        send_message = "Commands: ```"
-        space_len = longest_cmd() + 4
-        for k, v in usage.items():
-            send_message += "\n" + k + " "*(space_len - len(k)) + v
-        send_message += "```"
-    elif args[0] == "?trigger":  # Show trigger
-        send_message = "Trigger is !"
 
     return send_message
 
