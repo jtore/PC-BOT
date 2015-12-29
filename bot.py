@@ -15,9 +15,16 @@ __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 
 # Sets up config files for saving and loading
 class Config:
-    def __init__(self, config, file="config.yml"):
+    """
+    Creates a configuration yml file
+
+    Arguments:
+        config -- Initializer for lists or dictionaries (required)
+        file -- Filename for the config, specified without extension (default "config")
+    """
+    def __init__(self, config, file="config"):
         self.config = config
-        self.file = file
+        self.file = "{}.yml".format(file)
 
     def save(self):
         file = open(self.file, "w")
@@ -45,21 +52,34 @@ class Config:
 
 # Thread class handling messages
 class OnMessage(threading.Thread):
+    """
+    Thread for handling commands.
+
+    Logs are printed to the console only, with the format: time@user> command
+    Example: 29.12.15 22:38:18@PC> !stats -PC
+    """
+
     def __init__(self, message):
         threading.Thread.__init__(self)
         self.message = message
 
     def run(self):
         send_message = ""
+
         if self.message.content:
             send_message = handle_command(self.message)
+
         if send_message:
             send_message = send_message.encode('utf-8')
+
+            # Log received command to console
             print("%s@%s> %s" % (
                 datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
                 self.message.author.name,
                 self.message.content
             ))
+
+            #
             client.send_message(self.message.channel, self.message.author.mention() + " " + send_message)
 
 
@@ -95,6 +115,7 @@ yn_set = Config(
     file="yn.yml"
 )
 
+# Store osu! user links
 osu_users = Config(
     config={},
     file="osu-users.yml"
@@ -104,7 +125,7 @@ osu_users = Config(
 story_enabled = {}
 story = {}
 
-# Initialize cleverbot (Apparently didn't support multiple instances)
+# Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
 
 
@@ -136,22 +157,29 @@ def handle_command(message):
     global story_enabled, story
 
     args = message.content.split()
+
+    # Do not lowercase for stories
     if not args[0].startswith("+"):
         args[0] = args[0].lower()
+
+    # Initialize message string to return
     send_message = ""
 
     # Avoid these comments
     if len(args) < 1:
         return
 
-    if args[0] == "!google":  # Search google
+    # Search google
+    if args[0] == "!google":
         if len(args) > 1:
             search_query = " ".join(args[1:])
             search_request = requests.get("https://google.com/search", params={"q": search_query})
             send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!display":  # Link to images
+
+    # Link to images
+    elif args[0] == "!display":
         if len(args) > 1:
             if len(args) > 2 and args[1].lower() == "-u":
                 search_params = {}
@@ -168,7 +196,9 @@ def handle_command(message):
                 send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!lucky":  # Return first link from google search (deprecated API, allows few searches)
+
+    # Return first link from google search (deprecated API, allows few searches)
+    elif args[0] == "!lucky":
         if len(args) > 1:
             search_string = " ".join(args[1:])
             result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web",
@@ -191,15 +221,19 @@ def handle_command(message):
                 send_message = "No results :thumbsdown:"
         else:
             send_message = ":thumbsdown:"
+
+    # Return let me google that for you formatted google search
     elif args[0] == "!lmgtfy":
         if len(args) > 1:
             search_query = " ".join(args[1:])
             search_request = requests.get("http://lmgtfy.com/",
                                           params={"q": search_query})
-            send_message = search_request.history[0].url
+            send_message = search_request.url
         else:
             send_message = ":thumbsdown:"
-    elif args[0] == "!profile":  # Link to osu! profile or set author as user
+
+    # Link to osu! profile or set author as user
+    elif args[0] == "!profile":
         if len(args) > 1:
             append_message = ""
             user = " ".join(args[1:])
@@ -226,7 +260,9 @@ def handle_command(message):
                 send_message = "https://osu.ppy.sh/u/" + user
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
-    elif args[0] == "!stats":  # Give a list of osu! profile stats
+
+    # Give a list of osu! profile stats
+    elif args[0] == "!stats":
         if len(args) > 1:
             user = " ".join(args[1:])
             send_message = get_osu_stats(user)
@@ -236,7 +272,9 @@ def handle_command(message):
                 send_message = get_osu_stats(user)
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
-    elif args[0] == "!roll":  # Roll a dice
+
+    # Roll a dice
+    elif args[0] == "!roll":
         roll_n = 100
         if len(args) > 1:
             try:
@@ -244,7 +282,9 @@ def handle_command(message):
             except ValueError:
                 pass
         send_message = "rolls " + str(random.randrange(1, roll_n+1))
-    elif args[0] == "!yn":  # Yes or no
+
+    # Very extensive yes or no function
+    elif args[0] == "!yn":
         yn_list = yn_set.get("default")
 
         # Update language set
@@ -315,7 +355,9 @@ def handle_command(message):
 
             # Choose from list and send
             send_message = random.choice(yn_list)
-    elif args[0] == "!story":  # Enable or disable story mode
+
+    # Enable or disable story mode
+    elif args[0] == "!story":
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
             story_enabled[message.channel.id] = False
             if story[message.channel.id]:
@@ -330,7 +372,9 @@ def handle_command(message):
             story_enabled[message.channel.id] = True
             story[message.channel.id] = ""
             send_message = "Recording *all words* starting with +, write only + to add new paragraph"
-    elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):  # Add to story if enabled
+
+    # Add to story if enabled
+    elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):
         for n in args:
             if n == "+":
                 story[message.channel.id] += "\n\n"
@@ -339,9 +383,13 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
-    elif args[0] == "!help":  # Display  help command
-        send_message = "Help is `!pcbot`"
-    elif args[0] == "!pcbot":  # Show help
+
+    # Display  help command
+    elif args[0] == "!help":
+        send_message = "`!pcbot`"
+
+    # Show help or return github link
+    elif args[0] == "!pcbot":
         # Give link to git
         if len(args) > 1:
             if args[1] == "--git":
@@ -355,9 +403,13 @@ def handle_command(message):
         for k, v in usage.items():
             send_message += "\n" + k + " "*(space_len - len(k)) + v
         send_message += "```"
-    elif args[0] == "?trigger":  # Show trigger
+
+    # Show trigger
+    elif args[0] == "?trigger":
         send_message = "Trigger is !"
-    elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
+
+    # Perform cleverbot command on mention
+    elif client.user in message.mentions and not message.mention_everyone:
         # Get question asked
         cleverbot_question = ""
         for i in range(0, len(args)):
@@ -374,6 +426,7 @@ def handle_command(message):
 
 @client.event
 def on_message(message):
+    # Start new thread to handle commands
     OnMessage(message).start()
 
 
@@ -384,7 +437,9 @@ def on_ready():
     print(client.user.id)
     print('------')
 
+    # Load configuration files
     yn_set.load()
     osu_users.load()
 
-client.run()
+if __name__ == "__main__":
+    client.run()
