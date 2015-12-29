@@ -10,6 +10,9 @@ import pycountry
 import cleverbot
 
 
+__git_url__ = "https://github.com/PcBoy111/PC-BOT"
+
+
 # Sets up config files for saving and loading
 class Config:
     def __init__(self, config, file="config.yml"):
@@ -74,7 +77,7 @@ else:
     osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
 
 usage = {
-    "!pcbot": "display commands",
+    "!pcbot [--git]": "display commands or return projects github link",
     "!google <query ...>": "search the web",
     "!display [-u url] [query ...]": "search the web for images",
     "!lucky <query ...>": "retrieve a link (please refrain from using this too much)",
@@ -340,12 +343,16 @@ def handle_command(message):
     elif args[0] == "!help":  # Display  help command
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
-        send_message = "Commands: ```"
-        longest_cmd = len(max(usage))  # Return length of longest key
-        space_len = longest_cmd + 4
-        for k, v in usage.items():
-            send_message += "\n" + k + " "*(space_len - len(k)) + v
-        send_message += "```"
+        # Give link to git
+        if args.get(1) == "--git":
+            send_message = __git_url__
+        else:
+            send_message = "Commands: ```"
+            longest_cmd = len(max(usage))  # Return length of longest key
+            space_len = longest_cmd + 4
+            for k, v in usage.items():
+                send_message += "\n" + k + " "*(space_len - len(k)) + v
+            send_message += "```"
     elif args[0] == "?trigger":  # Show trigger
         send_message = "Trigger is !"
     elif client.user in message.mentions and not message.mention_everyone:  # Perform cleverbot command on mention
