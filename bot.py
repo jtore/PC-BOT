@@ -215,12 +215,12 @@ def handle_command(message):
                     if len(message.channel_mentions) > 0:
                         mentioned_channel = message.channel_mentions[0]  # Set to first one, ignore other mentions
                         if yn_set.get(mentioned_channel.id):
-                            # Clone settings to current channel
-                            if args[1] == "--set":
-                                yn_set.set(message.channel.id, mentioned_channel.id)
                             # Clone settings as default in current server
-                            elif args[1] == "--global-set":
+                            if globally:
                                 yn_set.set(message.server.id, mentioned_channel.id)
+                            # Clone settings to current channel
+                            else:
+                                yn_set.set(message.channel.id, mentioned_channel.id)
                             send_message = "YN " + ("globally " if globally else "") + "cloned from " + \
                                            mentioned_channel.mention()
                     else:
@@ -229,12 +229,12 @@ def handle_command(message):
                             for i in range(2, len(args)):
                                 args[i] = args[i].replace("_", " ")
 
-                            # Apply list to channel
-                            if args[1] == "--set":
-                                yn_set.set(message.channel.id, args[2:])
                             # Apply list to server
-                            elif args[1] == "--global-set":
+                            if globally:
                                 yn_set.set(message.server.id, args[2:])
+                            # Apply list to channel
+                            else:
+                                yn_set.set(message.channel.id, args[2:])
 
                             # Send formatted message
                             send_message = "YN set to "
@@ -243,15 +243,20 @@ def handle_command(message):
                             send_message += ",".join(args[2:])
                             send_message += " for this " + ("server" if globally else "channel")
                         else:
-                            # Reset channel settings
-                            if args[1] == "--set":
-                                yn_set.remove(message.channel.id)
                             # Reset server settings
-                            elif args[1] == "--global-set":
+                            if globally:
                                 yn_set.remove(message.server.id)
+                            # Reset channel settings
+                            else:
+                                yn_set.remove(message.channel.id)
 
                             send_message = "YN reset for this " + ("server" if globally else "channel")
                     yn_set.save()
+
+                    # Warn user when the channel id equals the server id
+                    # (my understanding is that the default channel will have the same id as the server)
+                    if not globally and (message.channel.id == message.server.id):
+                        send_message += "\n*setting YN for this channel is* ***the same*** *as setting server wide YN*"
 
         # Return value from list
         if not send_message:
