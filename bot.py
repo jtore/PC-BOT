@@ -122,9 +122,9 @@ osu_users = Config(
 )
 
 # Store server wide settings
-server_settings = Config(
-    config={"default": {"reddit": False}},
-    filename="server_settings"
+reddit_settings = Config(
+    config={"default": False},
+    filename="reddit_settings"
 )
 
 # Store story info in multiple channels
@@ -165,6 +165,7 @@ def subreddit_in(args):
             return arg[3:]
 
     return False
+
 
 # Split string into list and handle keywords
 def handle_command(message):
@@ -405,8 +406,6 @@ def handle_command(message):
     # Show help, return github link or change settings
     elif args[0] == "!pcbot":
         if len(args) > 1:
-            settings = server_settings.get(message.server.id)
-
             # Give link to git
             if args[1] == "--git":
                 send_message = __git_url__
@@ -414,19 +413,14 @@ def handle_command(message):
 
             # Toggle subreddit functionality
             elif args[1] == "--reddit":
-                if settings is None:
-                    server_settings.set(message.server.id, server_settings.config["default"])
-                    settings = server_settings.get(message.server.id)  # Update local settings variable
-
-                if settings["reddit"]:
-                    server_settings.config[message.server.id]["reddit"] = False     # :(
+                if reddit_settings.get(message.server.id):
+                    reddit_settings.set(message.server.id, False)
                     send_message = "*Automatic subreddit linking* ***disabled*** *for this server*"
                 else:
-                    server_settings.config[message.server.id]["reddit"] = True      # :(
+                    reddit_settings.set(message.server.id, True)
                     send_message = "*Automatic subreddit linking* ***enabled*** *for this server*"
 
-                server_settings.save()
-
+                reddit_settings.save()
                 return send_message
 
         # Print list of commands with description
@@ -446,11 +440,11 @@ def handle_command(message):
         reddit_enabled = "default"
 
         # If server settings are saved, use these
-        if server_settings.get(message.server.id):
+        if reddit_settings.get(message.server.id):
             reddit_enabled = message.server.id
 
         # Return subreddit link if function is enabled on the server
-        if server_settings.get(reddit_enabled).get("reddit"):
+        if reddit_settings.get(reddit_enabled).get("reddit"):
             subreddit = subreddit_in(args)
             search_string = "https://www.reddit.com/r/" + subreddit
             search_request = requests.get(search_string, allow_redirects=True)
@@ -488,7 +482,7 @@ def on_ready():
     # Load configuration files
     yn_set.load()
     osu_users.load()
-    server_settings.load()
+    reddit_settings.load()
 
 if __name__ == "__main__":
     client.run()
