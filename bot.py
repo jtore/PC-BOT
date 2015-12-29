@@ -16,10 +16,10 @@ __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 # Sets up config files for saving and loading
 class Config:
     """
-    Creates a configuration yml file
+    Creates a configuration yml file of a dictionary
 
     Arguments:
-        config -- Initializer for lists or dictionaries (required)
+        config -- Initializer for dictionaries (required)
         file -- Filename for the config, specified without extension (default "config")
     """
     def __init__(self, config, filename="config"):
@@ -41,9 +41,9 @@ class Config:
     def set(self, index, value):
         self.config[index] = value
 
-    def get(self, value):
-        if value:
-            return self.config.get(value)
+    def get(self, index):
+        if index:
+            return self.config.get(index)
         return self.config
 
     def remove(self, index):
@@ -121,6 +121,12 @@ osu_users = Config(
     filename="osu-users"
 )
 
+# Store server wide settings
+server_settings = Config(
+    config={"default": {"reddit": False}},
+    filename="server_settings"
+)
+
 # Store story info in multiple channels
 story_enabled = {}
 story = {}
@@ -151,6 +157,14 @@ def get_osu_stats(user):
 
     return send_message
 
+
+# Return subreddit from command or False
+def subreddit_in(args):
+    for arg in args:
+        if arg.startswith("/r/"):
+            return arg[3:]
+
+    return False
 
 # Split string into list and handle keywords
 def handle_command(message):
@@ -390,10 +404,22 @@ def handle_command(message):
 
     # Show help or return github link
     elif args[0] == "!pcbot":
-        # Give link to git
         if len(args) > 1:
+            settings = server_settings.get(message.server.id)
+
+            # Give link to git
             if args[1] == "--git":
                 send_message = __git_url__
+                return send_message
+
+            # Toggle subreddit functionality
+            elif args[1] == "--reddit":
+                if settings.get("reddit"):
+                    server_settings.config[message.server.id]["reddit"] = False     # :(
+                    send_message = "*Automatic subreddit linking* ***enabled***"
+                else:
+                    server_settings.config[message.server.id]["reddit"] = True      # :(
+                    send_message = "*Automatic subreddit linking* ***disabled***"
                 return send_message
 
         # Print list of commands with description
@@ -407,6 +433,21 @@ def handle_command(message):
     # Show trigger
     elif args[0] == "?trigger":
         send_message = "Trigger is !"
+
+    # Lookup subreddit
+    elif subreddit_in(args):
+        reddit_enabled = "default"
+
+        # If server settings are saved, use these
+        if server_settings.get(message.server.id):
+            reddit_enabled = message.server.id
+
+        # Return subreddit link if function is enabled on the server
+        if server_settings.get(reddit_enabled).get("reddit"):
+            subreddit = subreddit_in(args)
+            search_string = "https://www.reddit.com/r/" + subreddit
+            search_request = requests.get(search_string)
+            send_message = search_request.url
 
     # Perform cleverbot command on mention
     elif client.user in message.mentions and not message.mention_everyone:
@@ -440,6 +481,7 @@ def on_ready():
     # Load configuration files
     yn_set.load()
     osu_users.load()
+    server_settings.load()
 
 if __name__ == "__main__":
     client.run()
