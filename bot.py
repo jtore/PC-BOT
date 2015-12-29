@@ -111,29 +111,20 @@ cleverbot_client = cleverbot.Cleverbot()
 # Get and format osu! user stats
 def get_osu_stats(user):
     if osu_api:
-        to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
-        osu_stats_request = requests.get(to_get)
+        # to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
+        osu_stats_request = requests.get("https://osu.ppy.sh/api/get_user", params={"k": osu_api, "u": user})
         if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
             return "No such user :thumbsdown:"
         osu_stats = osu_stats_request.json()[0]
-        send_message = "**Stats for %s** / %s ```" % (
-            osu_stats["username"],
-            "http://osu.ppy.sh/u/" + osu_stats["user_id"]
-        )
-        send_message += "Performance: %spp (#%s) /%s #%s" % (
-            osu_stats["pp_raw"],
-            osu_stats["pp_rank"],
-            pycountry.countries.get(alpha2=osu_stats["country"]).name,
-            osu_stats["pp_country_rank"]
-        )
-        send_message += "\nAccuracy:    %0.6f %%" % float(osu_stats["accuracy"])
-        send_message += "\n             %s SS %s S %s A" % (
-            osu_stats["count_rank_ss"],
-            osu_stats["count_rank_s"],
-            osu_stats["count_rank_a"]
-        )
-        send_message += "\nPlaycount:   " + osu_stats["playcount"]
-        send_message += "```"
+        osu_stats["country_name"] = pycountry.countries.get(alpha2=osu_stats["country"]).name
+        osu_stats["accuracy"] = float(osu_stats["accuracy"])
+
+        # Format message with osu_stats
+        send_message = "**Stats for {username}** / https://osu.ppy.sh/u/{user_id} ```\n" \
+                       "Performance: {pp_raw}pp (#{pp_rank}) /{country_name} #{pp_country_rank}\n" \
+                       "Accuracy:    {accuracy:.6f} %\n" \
+                       "             {count_rank_ss} SS {count_rank_s} S {count_rank_a} A\n" \
+                       "Playcount:   {playcount}```".format(**osu_stats)
     else:
         send_message = "This command is disabled. :thumbsdown:"
 
@@ -155,28 +146,33 @@ def handle_command(message):
 
     if args[0] == "!google":  # Search google
         if len(args) > 1:
-            send_message = "http://google.com/search?q=" + "+".join(args[1:])
+            search_query = " ".join(args[1:])
+            search_request = requests.get("https://google.com/search", params={"q": search_query})
+            send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!display":  # Link to images
         if len(args) > 1:
             if len(args) > 2 and args[1].lower() == "-u":
-                query = ""
+                search_params = {}
                 if len(args) > 3:
-                    query = "+".join(args[3:])
-                    query = "&q=" + query + "&oq=" + query
-                send_message = "https://www.google.com/searchbyimage?image_url=%s%s" % (
-                    args[2],
-                    query
-                )
+                    search_query = " ".join(args[3:])
+                    search_params["q"], search_params["oq"] = [search_query] * 2
+                search_request = requests.get("https://www.google.com/searchbyimage?image_url=%s" % args[2],
+                                              params=search_params)
+                send_message = search_request.history[0].url
             else:
-                send_message = "http://google.com/search?q=" + "+".join(args[1:]) + "&tbm=isch"
+                search_query = " ".join(args[1:])
+                search_request = requests.get("https://google.com/search",
+                                              params={"q": search_query, "tbm": "isch"})
+                send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!lucky":  # Return first link from google search (deprecated API, allows few searches)
         if len(args) > 1:
-            search_string = "+".join(args[1:])
-            result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + search_string)
+            search_string = " ".join(args[1:])
+            result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web",
+                                         params={"v": "1.0", "q": search_string})
             result = result_string.json()
             results = []
             if not result["responseData"]:
@@ -197,7 +193,10 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!lmgtfy":
         if len(args) > 1:
-            send_message = "http://lmgtfy.com/q?=" + r"+".join(args[1:])
+            search_query = " ".join(args[1:])
+            search_request = requests.get("http://lmgtfy.com/",
+                                          params={"q": search_query})
+            send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile or set author as user
@@ -220,11 +219,11 @@ def handle_command(message):
                 osu_users.save()
 
             if not send_message:
-                send_message = r"http://osu.ppy.sh/u/" + user + append_message
+                send_message = "https://osu.ppy.sh/u/" + user + append_message
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = r"http://osu.ppy.sh/u/" + user
+                send_message = "https://osu.ppy.sh/u/" + user
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
     elif args[0] == "!stats":  # Give a list of osu! profile stats
