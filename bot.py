@@ -420,10 +420,10 @@ def handle_command(message):
 
                 if settings["reddit"]:
                     server_settings.config[message.server.id]["reddit"] = False     # :(
-                    send_message = "*Automatic subreddit linking* ***disabled***"
+                    send_message = "*Automatic subreddit linking* ***disabled*** *for this server*"
                 else:
                     server_settings.config[message.server.id]["reddit"] = True      # :(
-                    send_message = "*Automatic subreddit linking* ***enabled***"
+                    send_message = "*Automatic subreddit linking* ***enabled*** *for this server*"
 
                 return send_message
 
