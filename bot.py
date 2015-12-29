@@ -97,7 +97,7 @@ else:
     osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
 
 usage = {
-    "!pcbot [--git]": "display commands or return projects github link",
+    "!pcbot [--git | --reddit]": "display commands",
     "!google <query ...>": "search the web",
     "!display [-u url] [query ...]": "search the web for images",
     "!lucky <query ...>": "retrieve a link (please refrain from using this too much)",
