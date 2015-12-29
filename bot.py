@@ -418,6 +418,8 @@ def handle_command(message):
                     server_settings.config[message.server.id]["reddit"] = False     # :(
                     send_message = "*Automatic subreddit linking* ***enabled***"
                 else:
+                    if settings is None:
+                        server_settings.set(message.channel.id, server_settings.get("default"))
                     server_settings.config[message.server.id]["reddit"] = True      # :(
                     send_message = "*Automatic subreddit linking* ***disabled***"
                 return send_message
