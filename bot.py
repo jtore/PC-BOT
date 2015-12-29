@@ -112,13 +112,13 @@ usage = {
 # Store !yn info in multiple channels
 yn_set = Config(
     config={"default": ["yes", "no"]},
-    filename="yn.yml"
+    filename="yn"
 )
 
 # Store osu! user links
 osu_users = Config(
     config={},
-    filename="osu-users.yml"
+    filename="osu-users"
 )
 
 # Store story info in multiple channels
