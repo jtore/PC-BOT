@@ -28,7 +28,7 @@ class Config:
 
     def save(self):
         file = open(self.filename, "w")
-        file.write(yaml.dump(self.config, encoding="utf-8", allow_unicode=True))
+        file.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
         file.close()
 
     def load(self):
