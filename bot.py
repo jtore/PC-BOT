@@ -179,11 +179,11 @@ def handle_command(message):
                 if len(args) > 2:
                     user = " ".join(args[2:])
                     osu_users.set(message.author.id, user)
-                    append_message = "\nUser " + user + " associated with discord"
+                    append_message = "\n*User " + user + " associated with discord*"
                 else:
                     user = osu_users.remove(message.author.id)
                     if user:
-                        send_message = "Removed discord association with " + user
+                        send_message = "*Removed discord association with " + user + "*"
                     else:
                         send_message = "Please use `!profile -m <user>`"
                 osu_users.save()
