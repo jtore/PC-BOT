@@ -171,13 +171,19 @@ def handle_command(message):
             send_message = ":thumbsdown:"
     elif args[0] == "!profile":  # Link to osu! profile or set author as user
         if len(args) > 1:
+            append_message = ""
             user = " ".join(args[1:])
-            if (args[1] == "-m" or args[1] == "--me") and (len(args) > 2):
-                user = " ".join(args[2:])
-                osu_users.set(message.author.id, user)
+            if args[1] == "-m" or args[1] == "--me":
+                if len(args) > 2:
+                    user = " ".join(args[2:])
+                    osu_users.set(message.author.id, user)
+                    append_message = "\nUser " + user + " associated with discord"
+                else:
+                    osu_users.remove(message.author.id)
+                    append_message = "\nRemoved discord association."
                 osu_users.save()
 
-            send_message = r"http://osu.ppy.sh/u/" + user
+            send_message = r"http://osu.ppy.sh/u/" + user + append_message
         else:
             user = osu_users.get(message.author.id)
             if user:
