@@ -414,14 +414,16 @@ def handle_command(message):
 
             # Toggle subreddit functionality
             elif args[1] == "--reddit":
-                if settings:
+                if settings is None:
+                    server_settings.set(message.server.id, server_settings.get("default"))
+
+                if settings["reddit"]:
                     server_settings.config[message.server.id]["reddit"] = False     # :(
-                    send_message = "*Automatic subreddit linking* ***enabled***"
-                else:
-                    if settings is None:
-                        server_settings.set(message.server.id, server_settings.get("default"))
-                    server_settings.config[message.server.id]["reddit"] = True      # :(
                     send_message = "*Automatic subreddit linking* ***disabled***"
+                else:
+                    server_settings.config[message.server.id]["reddit"] = True      # :(
+                    send_message = "*Automatic subreddit linking* ***enabled***"
+
                 return send_message
 
         # Print list of commands with description
