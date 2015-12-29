@@ -2,6 +2,7 @@ import discord
 import requests
 import sys
 import os
+import threading
 import random
 import datetime
 import yaml
@@ -37,6 +38,26 @@ class Config:
 
     def remove(self, index):
         return self.config.pop(index, False)
+
+
+# Thread class handling messages
+class OnMessage(threading.Thread):
+    def __init__(self, message):
+        threading.Thread.__init__(self)
+        self.message = message
+
+    def run(self):
+        send_message = ""
+        if self.message.content:
+            send_message = handle_command(self.message)
+        if send_message:
+            send_message = send_message.encode('utf-8')
+            print("%s@%s> %s" % (
+                datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
+                self.message.author.name,
+                self.message.content
+            ))
+            client.send_message(self.message.channel, self.message.author.mention() + " " + send_message)
 
 
 client = discord.Client()
@@ -351,17 +372,7 @@ def handle_command(message):
 
 @client.event
 def on_message(message):
-    send_message = ""
-    if message.content:
-        send_message = handle_command(message)
-    if send_message:
-        send_message = send_message.encode('utf-8')
-        print("%s@%s> %s" % (
-            datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
-            message.author.name,
-            message.content
-        ))
-        client.send_message(message.channel, message.author.mention() + " " + send_message)
+    OnMessage(message).start()
 
 
 @client.event
