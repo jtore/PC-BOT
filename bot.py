@@ -402,7 +402,7 @@ def handle_command(message):
     elif args[0] == "!help":
         send_message = "`!pcbot`"
 
-    # Show help or return github link
+    # Show help, return github link or change settings
     elif args[0] == "!pcbot":
         if len(args) > 1:
             settings = server_settings.get(message.server.id)
@@ -414,7 +414,7 @@ def handle_command(message):
 
             # Toggle subreddit functionality
             elif args[1] == "--reddit":
-                if settings.get("reddit"):
+                if settings:
                     server_settings.config[message.server.id]["reddit"] = False     # :(
                     send_message = "*Automatic subreddit linking* ***enabled***"
                 else:
