@@ -416,6 +416,7 @@ def handle_command(message):
             elif args[1] == "--reddit":
                 if settings is None:
                     server_settings.set(message.server.id, server_settings.get("default"))
+                    settings = server_settings.get(message.server.id)  # Update local settings variable
 
                 if settings["reddit"]:
                     server_settings.config[message.server.id]["reddit"] = False     # :(
