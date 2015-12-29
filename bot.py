@@ -229,10 +229,10 @@ def handle_command(message):
                         if yn_set.get(mentioned_channel.id):
                             # Clone settings as default in current server
                             if globally:
-                                yn_set.set(message.server.id, mentioned_channel.id)
+                                yn_set.set(message.server.id, yn_set.get(mentioned_channel.id))
                             # Clone settings to current channel
                             else:
-                                yn_set.set(message.channel.id, mentioned_channel.id)
+                                yn_set.set(message.channel.id, yn_set.get(mentioned_channel.id))
                             send_message = "YN " + ("globally " if globally else "") + "cloned from " + \
                                            mentioned_channel.mention()
                     else:
