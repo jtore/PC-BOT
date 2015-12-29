@@ -437,14 +437,15 @@ def handle_command(message):
 
     # Lookup subreddit
     elif subreddit_in(args):
-        reddit_enabled = "default"
+        reddit_enabled = reddit_settings.get("default")
+        server_enabled = reddit_settings.get(message.server.id)
 
         # If server settings are saved, use these
-        if reddit_settings.get(message.server.id):
-            reddit_enabled = message.server.id
+        if server_enabled:
+            reddit_enabled = server_enabled
 
         # Return subreddit link if function is enabled on the server
-        if reddit_settings.get(reddit_enabled).get("reddit"):
+        if reddit_enabled:
             subreddit = subreddit_in(args)
             search_string = "https://www.reddit.com/r/" + subreddit
             search_request = requests.get(search_string, allow_redirects=True)
