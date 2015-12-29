@@ -105,15 +105,7 @@ story = {}
 cleverbot_client = cleverbot.Cleverbot()
 
 
-# Return length of longest keyword for printing
-def longest_cmd():
-    cmd_len = 0
-    for k, _ in usage.items():
-        if len(k) > cmd_len:
-            cmd_len = len(k)
-    return cmd_len
-
-
+# Get and format osu! user stats
 def get_osu_stats(user):
     if osu_api:
         to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
@@ -349,7 +341,8 @@ def handle_command(message):
         send_message = "Help is `!pcbot`"
     elif args[0] == "!pcbot":  # Show help
         send_message = "Commands: ```"
-        space_len = longest_cmd() + 4
+        longest_cmd = len(max(usage))  # Return length of longest key
+        space_len = longest_cmd + 4
         for k, v in usage.items():
             send_message += "\n" + k + " "*(space_len - len(k)) + v
         send_message += "```"
