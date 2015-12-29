@@ -173,6 +173,8 @@ def handle_command(message):
         if len(args) > 1:
             append_message = ""
             user = " ".join(args[1:])
+
+            # If command is --me
             if args[1] == "-m" or args[1] == "--me":
                 if len(args) > 2:
                     user = " ".join(args[2:])
@@ -180,10 +182,11 @@ def handle_command(message):
                     append_message = "\nUser " + user + " associated with discord"
                 else:
                     osu_users.remove(message.author.id)
-                    append_message = "\nRemoved discord association."
+                    send_message = "Removed discord association."
                 osu_users.save()
 
-            send_message = r"http://osu.ppy.sh/u/" + user + append_message
+            if not send_message:
+                send_message = r"http://osu.ppy.sh/u/" + user + append_message
         else:
             user = osu_users.get(message.author.id)
             if user:
