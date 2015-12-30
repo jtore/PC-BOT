@@ -215,8 +215,8 @@ def get_osu_map(url):
                 osu_scores_datetime = datetime(*strptime(osu_scores["date"], "%Y-%m-%d %H:%M:%S")[:6])
                 osu_scores["format_date"] = datetime.today() - osu_scores_datetime
                 send_message += "\n{username} is in the lead! ({format_date.days} days ago)```\n" \
-                                "  Score: {format_score} / {format_pp}\n" \
-                                "  Combo: {maxcombo}x / Misses: {countmiss}\n" \
+                                "Score: {format_score} / {format_pp}\n" \
+                                "Combo: {maxcombo}x / Misses: {countmiss}\n" \
                                 "         {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
 
         # Return map info if no version is selected
