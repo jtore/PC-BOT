@@ -521,7 +521,7 @@ def handle_command(message):
         urls = osu_maps_in(args)
         if len(urls) > 0:
             for url in urls:
-                send_message += get_osu_map(url) + "\n\n" if len(urls) > 1 else ""
+                send_message += get_osu_map(url) + "\n\n"
 
     # Lookup subreddit
     elif subreddit_in(args):
