@@ -236,6 +236,15 @@ def subreddit_in(args):
     return False
 
 
+# Return osu! map link or false
+def osu_map_in(args):
+    for s in args:
+            if "osu.ppy.sh" in args:
+                return s
+
+    return False
+
+
 # Split string into list and handle keywords
 def handle_command(message):
     global story_enabled, story
@@ -506,12 +515,8 @@ def handle_command(message):
         send_message = "Trigger is !"
 
     # Get map links and display info
-    elif "osu.ppy.sh" in args:
-        url = ""
-        for s in args:
-            if "osu.ppy.sh" in args:
-                url = s
-
+    elif osu_map_in(args) in args:
+        url = osu_map_in(args)
         send_message = get_osu_map(url)
 
     # Lookup subreddit
