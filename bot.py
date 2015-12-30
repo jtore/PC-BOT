@@ -239,7 +239,7 @@ def subreddit_in(args):
 # Return osu! map link or false
 def osu_map_in(args):
     for s in args:
-            if "osu.ppy.sh" in args:
+            if "osu.ppy.sh" in s:
                 return s
 
     return False
