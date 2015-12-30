@@ -236,13 +236,15 @@ def subreddit_in(args):
     return False
 
 
-# Return osu! map link or false
-def osu_map_in(args):
+# Return osu! map links in a list
+def osu_maps_in(args):
+    urls = []
     for s in args:
             if "osu.ppy.sh" in s:
-                return s
+                urls.append(s)
 
-    return False
+    if urls:
+        return urls
 
 
 # Split string into list and handle keywords
@@ -515,9 +517,10 @@ def handle_command(message):
         send_message = "Trigger is !"
 
     # Get map links and display info
-    elif osu_map_in(args) in args:
-        url = osu_map_in(args)
-        send_message = get_osu_map(url)
+    elif osu_maps_in(args) in args:
+        urls = osu_maps_in(args)
+        for url in urls:
+            send_message += get_osu_map(url) + "\n\n"
 
     # Lookup subreddit
     elif subreddit_in(args):
