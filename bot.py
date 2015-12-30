@@ -517,7 +517,7 @@ def handle_command(message):
         send_message = "Trigger is !"
 
     # Get map links and display info
-    elif osu_maps_in(args) in args:
+    elif osu_maps_in(args):
         urls = osu_maps_in(args)
         for url in urls:
             send_message += get_osu_map(url) + "\n\n"
