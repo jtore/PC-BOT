@@ -241,10 +241,10 @@ def osu_maps_in(args):
     urls = []
     for s in args:
             if "osu.ppy.sh" in s:
-                urls.append(s)
+                if s not in urls:
+                    urls.append(s)
 
-    if urls:
-        return urls
+    return urls
 
 
 # Split string into list and handle keywords
