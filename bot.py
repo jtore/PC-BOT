@@ -1,14 +1,14 @@
 import discord
 import requests
-import sys
-import os
-import threading
+from sys import exit, argv
+from os import path
+from datetime import datetime
 import random
-import datetime
+import threading
 import yaml
 import pycountry
 import cleverbot
-
+import urlparse
 
 __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 
@@ -27,14 +27,14 @@ class Config:
         self.filename = "{}.yml".format(filename)
 
     def save(self):
-        file = open(self.filename, "w")
-        file.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
-        file.close()
+        f = open(self.filename, "w")
+        f.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
+        f.close()
 
     def load(self):
-        if os.path.isfile(self.filename):
-            with open(self.filename, "r") as file:
-                self.config = yaml.load(file.read())
+        if path.isfile(self.filename):
+            with open(self.filename, "r") as f:
+                self.config = yaml.load(f.read())
         else:
             self.save()
 
@@ -74,7 +74,7 @@ class OnMessage(threading.Thread):
 
             # Log received command to console
             print("%s@%s> %s" % (
-                datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S"),
+                datetime.now().strftime("%d.%m.%y %H:%M:%S"),
                 self.message.author.name,
                 self.message.content
             ))
@@ -85,14 +85,14 @@ class OnMessage(threading.Thread):
 
 client = discord.Client()
 
-if len(sys.argv) < 3:
-    print("usage: " + sys.argv[0] + " <email> <password> [osu!api-key]")
-    sys.exit(0)
+if len(argv) < 3:
+    print("usage: " + argv[0] + " <email> <password> [osu!api-key]")
+    exit(0)
 
-client.login(sys.argv[1], sys.argv[2])
+client.login(argv[1], argv[2])
 
-if len(sys.argv) > 3:
-    osu_api = sys.argv[3]
+if len(argv) > 3:
+    osu_api = argv[3]
 else:
     osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
 
@@ -138,10 +138,12 @@ cleverbot_client = cleverbot.Cleverbot()
 # Get and format osu! user stats
 def get_osu_stats(user):
     if osu_api:
-        # to_get = r"http://osu.ppy.sh/api/get_user?k=" + osu_api + r"&u=" + user
         osu_stats_request = requests.get("https://osu.ppy.sh/api/get_user", params={"k": osu_api, "u": user})
-        if len(osu_stats_request.json()) < 1:  # If not found, override send_message and break with return
+
+        # If not found, override send_message and break with return
+        if len(osu_stats_request.json()) < 1:
             return "No such user :thumbsdown:"
+
         osu_stats = osu_stats_request.json()[0]
         osu_stats["country_name"] = pycountry.countries.get(alpha2=osu_stats["country"]).name
         osu_stats["accuracy"] = float(osu_stats["accuracy"])
@@ -154,6 +156,34 @@ def get_osu_stats(user):
                        "Playcount:   {playcount}```".format(**osu_stats)
     else:
         send_message = "This command is disabled. :thumbsdown:"
+
+    return send_message
+
+
+# Get and format osu! user stats
+def get_osu_map(url):
+    send_message = ""
+    osu_map_path = path.split(urlparse.urlparse(url.strip()).path)
+    osu_map_type = osu_map_path[0][1]
+
+    if osu_api and (osu_map_type == "b" or osu_map_type == "s"):
+        osu_map_params = urlparse.parse_qs(url)
+        osu_map_params["k"] = osu_api
+
+        # Get beatmap id and type
+        osu_map_id = osu_map_path[1]
+        osu_map_id_end = osu_map_id.find("&")
+        if osu_map_id_end > 0:
+            osu_map_id = osu_map_id[:osu_map_id_end]
+        osu_map_params[osu_map_type] = osu_map_id
+
+        osu_map_request = requests.get("https://osu.ppy.sh/api/get_beatmaps", osu_map_params)
+
+        # If not found, return nothing
+        if len(osu_map_request.json()) < 1:
+            return send_message
+
+        osu_map = osu_map_request.json()[0]
 
     return send_message
 
@@ -188,7 +218,8 @@ def handle_command(message):
     if args[0] == "!google":
         if len(args) > 1:
             search_query = " ".join(args[1:])
-            search_request = requests.get("https://google.com/search", params={"q": search_query})
+            search_request = requests.head("https://google.com/search",
+                                           params={"q": search_query})
             send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
@@ -201,13 +232,13 @@ def handle_command(message):
                 if len(args) > 3:
                     search_query = " ".join(args[3:])
                     search_params["q"], search_params["oq"] = [search_query] * 2
-                search_request = requests.get("https://www.google.com/searchbyimage?image_url=%s" % args[2],
-                                              params=search_params)
+                search_request = requests.head("https://www.google.com/searchbyimage?image_url=%s" % args[2],
+                                               params=search_params)
                 send_message = search_request.history[0].url
             else:
                 search_query = " ".join(args[1:])
-                search_request = requests.get("https://google.com/search",
-                                              params={"q": search_query, "tbm": "isch"})
+                search_request = requests.head("https://google.com/search",
+                                               params={"q": search_query, "tbm": "isch"})
                 send_message = search_request.history[0].url
         else:
             send_message = ":thumbsdown:"
@@ -241,8 +272,8 @@ def handle_command(message):
     elif args[0] == "!lmgtfy":
         if len(args) > 1:
             search_query = " ".join(args[1:])
-            search_request = requests.get("http://lmgtfy.com/",
-                                          params={"q": search_query})
+            search_request = requests.head("http://lmgtfy.com/",
+                                           params={"q": search_query})
             send_message = search_request.url
         else:
             send_message = ":thumbsdown:"
@@ -435,6 +466,11 @@ def handle_command(message):
     elif args[0] == "?trigger":
         send_message = "Trigger is !"
 
+    # Get map links and display info
+    elif "osu.ppy.sh" in args:
+        url = args[args.index("osu.ppy.sh")]
+        send_message = get_osu_map(url)
+
     # Lookup subreddit
     elif subreddit_in(args):
         reddit_enabled = reddit_settings.get("default")
@@ -448,7 +484,7 @@ def handle_command(message):
         if reddit_enabled:
             subreddit = subreddit_in(args)
             search_string = "https://www.reddit.com/r/" + subreddit
-            search_request = requests.get(search_string, allow_redirects=True)
+            search_request = requests.head(search_string, allow_redirects=True)
             send_message = search_request.url
 
     # Perform cleverbot command on mention
