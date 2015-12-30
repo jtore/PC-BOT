@@ -466,7 +466,7 @@ def handle_command(message):
                 if len(urls) > i+1:
                     send_message += "\n\n"
 
-    # Lookup subreddit
+    # Send reddit link
     elif subreddit_in(args):
         reddit_enabled = reddit_settings.get("default")
         server_enabled = reddit_settings.get(message.server.id)
@@ -477,7 +477,7 @@ def handle_command(message):
 
         # Return subreddit link if function is enabled on the server
         if reddit_enabled:
-            send_message = "https://www.reddit.com/r/" + subreddit
+            send_message = "https://www.reddit.com/r/" + subreddit_in(args)
 
     # Perform cleverbot command on mention
     elif client.user in message.mentions and not message.mention_everyone:
