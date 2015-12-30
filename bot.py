@@ -2,7 +2,8 @@ import discord
 import requests
 from sys import exit, argv
 from os import path
-from datetime import datetime
+from datetime import datetime, timedelta
+from time import strptime
 import random
 import threading
 import yaml
@@ -160,9 +161,10 @@ def get_osu_stats(user):
     return send_message
 
 
-# Get and format osu! user stats
+# Get and format osu! map
 def get_osu_map(url):
     send_message = ""
+
     osu_map_path = path.split(urlparse.urlparse(url.strip()).path)
     osu_map_type = osu_map_path[0][1]
 
@@ -184,6 +186,43 @@ def get_osu_map(url):
             return send_message
 
         osu_map = osu_map_request.json()[0]
+        osu_map["format_length"] = timedelta(seconds=int(osu_map["total_length"]))
+
+        # Send more info when a version is sent
+        if osu_map_type == "b":
+            osu_scores = None
+
+            # Get scores if the map has a scoreboard
+            if int(osu_map["approved"]) > 0:
+                osu_scores_params = osu_map_params
+                osu_scores_params["limit"] = 1
+                osu_scores_request = requests.get("https://osu.ppy.sh/api/get_scores", osu_scores_params)
+
+                osu_scores = osu_scores_request.json()[0]
+
+            # Format message with beatmap and difficulty info
+            osu_map["format_drain"] = timedelta(seconds=int(osu_map["hit_length"]))
+            osu_map["format_stars"] = float(osu_map["difficultyrating"])
+            send_message = "{artist} - {title} // {creator} [{version}]```\n" \
+                           "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
+                           "    CS:{diff_size} AR:{diff_approach} OD:{diff_overall} HP:{diff_drain} " \
+                           "Stars:{format_stars:.2f}```".format(**osu_map)
+
+            # If the map has scoreboard, give first player
+            if osu_scores:
+                osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
+                osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
+                osu_scores_datetime = datetime(*strptime(osu_scores["date"], "%Y-%m-%d %H:%M:%S")[:6])
+                osu_scores["format_date"] = datetime.today() - osu_scores_datetime
+                send_message += "\n{username} is in the lead! ({format_date.days} days ago)```\n" \
+                                "  Score: {format_score} / {format_pp}\n" \
+                                "  Combo: {maxcombo}x / Misses: {countmiss}\n" \
+                                "         {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
+
+        # Return map info if no version is selected
+        elif osu_map_type == "s":
+            send_message = "{artist} - {title} // {creator}```\n" \
+                           "Length: {format_length} BPM: {bpm}```".format(**osu_map)
 
     return send_message
 
