@@ -217,7 +217,7 @@ def get_osu_map(url):
                 send_message += "\n{username} is in the lead! ({format_date.days} days ago)```\n" \
                                 "Score: {format_score} / {format_pp}\n" \
                                 "Combo: {maxcombo}x / Misses: {countmiss}\n" \
-                                "         {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
+                                "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
 
         # Return map info if no version is selected
         elif osu_map_type == "s":
