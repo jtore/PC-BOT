@@ -520,8 +520,10 @@ def handle_command(message):
     elif osu_maps_in(args):
         urls = osu_maps_in(args)
         if len(urls) > 0:
-            for url in urls:
-                send_message += get_osu_map(url) + "\n\n"
+            for i, url in enumerate(urls):
+                send_message += get_osu_map(url)
+                if len(urls) > i+1:
+                    send_message += "\n\n"
 
     # Lookup subreddit
     elif subreddit_in(args):
