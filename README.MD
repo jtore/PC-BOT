@@ -2,7 +2,7 @@
 BOT for discord built with [discord.py][parent].
 Follow the link for install instructions.
 
-**This bot is only supported for python 2.7 (apparently)**
+**This bot is only supported for python 2.7 (cleverbot is unsupported for python 3.4)**
 [parent]: https://github.com/Rapptz/discord.py
 
 ## Running
