@@ -205,8 +205,8 @@ def get_osu_map(url):
             osu_map["format_stars"] = float(osu_map["difficultyrating"])
             send_message = "{artist} - {title} // {creator} [{version}]```\n" \
                            "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
-                           "    CS:{diff_size} AR:{diff_approach} OD:{diff_overall} HP:{diff_drain} " \
-                           "Stars:{format_stars:.2f}```".format(**osu_map)
+                           "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
+                           "Stars: {format_stars:.2f}```".format(**osu_map)
 
             # If the map has scoreboard, give first player
             if osu_scores:
