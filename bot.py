@@ -507,7 +507,11 @@ def handle_command(message):
 
     # Get map links and display info
     elif "osu.ppy.sh" in args:
-        url = args[args.index("osu.ppy.sh")]
+        url = ""
+        for s in args:
+            if "osu.ppy.sh" in args:
+                url = s
+
         send_message = get_osu_map(url)
 
     # Lookup subreddit
