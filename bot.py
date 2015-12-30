@@ -99,9 +99,6 @@ else:
 
 usage = {
     "!pcbot [--git | --reddit]": "display commands",
-    "!google <query ...>": "search the web",
-    "!display [-u url] [query ...]": "search the web for images",
-    "!lucky <query ...>": "retrieve a link (please refrain from using this too much)",
     "!lmgtfy <query ...>": "let me google that for you~",
     "!profile [-m | --me] <user>": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
@@ -264,67 +261,11 @@ def handle_command(message):
     if len(args) < 1:
         return
 
-    # Search google
-    if args[0] == "!google":
-        if len(args) > 1:
-            search_query = " ".join(args[1:])
-            search_request = requests.head("https://google.com/search",
-                                           params={"q": search_query})
-            send_message = search_request.history[0].url
-        else:
-            send_message = ":thumbsdown:"
-
-    # Link to images
-    elif args[0] == "!display":
-        if len(args) > 1:
-            if len(args) > 2 and args[1].lower() == "-u":
-                search_params = {}
-                if len(args) > 3:
-                    search_query = " ".join(args[3:])
-                    search_params["q"], search_params["oq"] = [search_query] * 2
-                search_request = requests.head("https://www.google.com/searchbyimage?image_url=%s" % args[2],
-                                               params=search_params)
-                send_message = search_request.history[0].url
-            else:
-                search_query = " ".join(args[1:])
-                search_request = requests.head("https://google.com/search",
-                                               params={"q": search_query, "tbm": "isch"})
-                send_message = search_request.history[0].url
-        else:
-            send_message = ":thumbsdown:"
-
-    # Return first link from google search (deprecated API, allows few searches)
-    elif args[0] == "!lucky":
-        if len(args) > 1:
-            search_string = " ".join(args[1:])
-            result_string = requests.get("http://ajax.googleapis.com/ajax/services/search/web",
-                                         params={"v": "1.0", "q": search_string})
-            result = result_string.json()
-            results = []
-            if not result["responseData"]:
-                if result["responseStatus"] == 403:
-                    send_message = "Please refrain from using lucky search too much :thumbsdown:"
-                else:
-                    send_message = "Unknown error :thumbsdown:"
-                return send_message
-            else:
-                results = result["responseData"]["results"]
-
-            # Send URL of the first result
-            if len(results) > 0:
-                send_message = results[0]["unescapedUrl"]
-            else:
-                send_message = "No results :thumbsdown:"
-        else:
-            send_message = ":thumbsdown:"
-
     # Return let me google that for you formatted google search
     elif args[0] == "!lmgtfy":
         if len(args) > 1:
-            search_query = " ".join(args[1:])
-            search_request = requests.head("http://lmgtfy.com/",
-                                           params={"q": search_query})
-            send_message = search_request.url
+            search_query = "+".join(args[1:])
+            send_message = "http://lmgtfy.com/?q={}".format(search_query)
         else:
             send_message = ":thumbsdown:"
 
@@ -536,10 +477,7 @@ def handle_command(message):
 
         # Return subreddit link if function is enabled on the server
         if reddit_enabled:
-            subreddit = subreddit_in(args)
-            search_string = "https://www.reddit.com/r/" + subreddit
-            search_request = requests.head(search_string, allow_redirects=True)
-            send_message = search_request.url
+            send_message = "https://www.reddit.com/r/" + subreddit
 
     # Perform cleverbot command on mention
     elif client.user in message.mentions and not message.mention_everyone:
