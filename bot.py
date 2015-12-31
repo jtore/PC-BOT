@@ -292,7 +292,7 @@ def handle_command(message):
             if args[1] == "-m" or args[1] == "--me":
                 if len(args) > 2:
                     user = " ".join(args[2:])
-                    if args[-1].startswith("#"):
+                    if args[-1].startswith("*"):
                         user = " ".join(args[2:-1])
                     osu_users.set(message.author.id, user)
                     append_message += "\n*User " + user + " associated with discord*"
