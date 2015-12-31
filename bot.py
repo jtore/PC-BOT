@@ -100,7 +100,7 @@ else:
 usage = {
     "!pcbot [--git | --reddit]": "display commands",
     "!lmgtfy <query ...>": "let me google that for you~",
-    "!profile [-m | --me] <user>": "sends link to osu! profile (assign with -m)",
+    "!profile [-m | --me] <user> [#tag]": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
@@ -271,16 +271,31 @@ def handle_command(message):
 
     # Link to osu! profile or set author as user
     elif args[0] == "!profile":
+        append_message = ""
+
+        # If command ends with a tag, apply the tag
+        if args[-1].startswith("#"):
+            append_message = "_"
+            reference = " ".join(args[-1:])
+            if "ranks" in reference or "performance" in reference:
+                reference = "leader"
+            elif reference == "kudosu":
+                reference = "kudos"
+            append_message += reference
+
         if len(args) > 1:
-            append_message = ""
             user = " ".join(args[1:])
+            if args[-1].startswith("#"):
+                user = " ".join(args[1:-1])
 
             # If command is --me
             if args[1] == "-m" or args[1] == "--me":
                 if len(args) > 2:
                     user = " ".join(args[2:])
+                    if args[-1].startswith("#"):
+                        user = " ".join(args[2:-1])
                     osu_users.set(message.author.id, user)
-                    append_message = "\n*User " + user + " associated with discord*"
+                    append_message += "\n*User " + user + " associated with discord*"
                 else:
                     user = osu_users.remove(message.author.id)
                     if user:
@@ -288,22 +303,13 @@ def handle_command(message):
                     else:
                         send_message = "Please use `!profile -m <user>`"
                 osu_users.save()
-            else:
-                if len(args) > 2:
-                    append_message = "#_"
-                    reference = " ".join(args[2:])
-                    if "ranks" in reference or "performance" in reference:
-                        reference = "leader"
-                    elif reference == "kudosu":
-                        reference = "kudos"
-                    append_message += reference
 
             if not send_message:
                 send_message = "https://osu.ppy.sh/u/" + user + append_message
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = "https://osu.ppy.sh/u/" + user
+                send_message = "https://osu.ppy.sh/u/" + user + append_message
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
 
