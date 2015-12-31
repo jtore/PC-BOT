@@ -100,7 +100,7 @@ else:
 usage = {
     "!pcbot [--git | --reddit]": "display commands",
     "!lmgtfy <query ...>": "let me google that for you~",
-    "!profile [-m | --me] <user> [#tag]": "sends link to osu! profile (assign with -m)",
+    "!profile [-m | --me] <user> [*tag]": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
@@ -274,18 +274,18 @@ def handle_command(message):
         append_message = ""
 
         # If command ends with a tag, apply the tag
-        if args[-1].startswith("#"):
-            append_message = "_"
-            reference = " ".join(args[-1:])
+        if args[-1].startswith("*"):
+            append_message = "#_"
+            reference = args[-1].replace("*", "")
             if "ranks" in reference or "performance" in reference:
                 reference = "leader"
             elif reference == "kudosu":
                 reference = "kudos"
             append_message += reference
 
-        if len(args) > 1:
+        if (len(args) > 1 and not args[-1].startswith("*")) or len(args) > 2:
             user = " ".join(args[1:])
-            if args[-1].startswith("#"):
+            if args[-1].startswith("*"):
                 user = " ".join(args[1:-1])
 
             # If command is --me
