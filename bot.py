@@ -3,7 +3,7 @@ import requests
 from sys import exit, argv
 from os import path
 from datetime import datetime, timedelta
-from time import strptime
+from dateutil.parser import parse
 import random
 import threading
 import yaml
@@ -133,6 +133,45 @@ story = {}
 cleverbot_client = cleverbot.Cleverbot()
 
 
+# Return the date since in a readable format
+def pretty_date(time):
+    """
+    Get a datetime object or a int() Epoch timestamp and return a
+    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+    'just now', etc
+
+    source: http://stackoverflow.com/a/1551394 with some minor adjustments to fit my needs
+    """
+    now = datetime.utcnow()
+    diff = now - time
+    second_diff = diff.seconds
+    day_diff = diff.days
+
+    if day_diff < 0:
+        return "something's wrong"
+
+    if day_diff == 0:
+        if second_diff < 10:
+            return "just now"
+        if second_diff < 60:
+            return str(second_diff) + " seconds ago"
+        if second_diff < 120:
+            return "a minute ago"
+        if second_diff < 3600:
+            return str(second_diff / 60) + " minutes ago"
+        if second_diff < 7200:
+            return "an hour ago"
+        if second_diff < 86400:
+            return str(second_diff / 3600) + " hours ago"
+    if day_diff < 7:
+        return str(day_diff) + " days ago"
+    if day_diff < 31:
+        return str(day_diff / 7) + " weeks ago"
+    if day_diff < 365:
+        return str(day_diff / 30) + " months ago"
+    return str(day_diff / 365) + " years ago"
+
+
 # Get and format osu! user stats
 def get_osu_stats(user):
     if osu_api:
@@ -209,9 +248,8 @@ def get_osu_map(url):
             if osu_scores:
                 osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
                 osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
-                osu_scores_datetime = datetime(*strptime(osu_scores["date"], "%Y-%m-%d %H:%M:%S")[:6])
-                osu_scores["format_date"] = datetime.today() - osu_scores_datetime
-                send_message += "\n{username} is in the lead! ({format_date.days} days ago)```\n" \
+                osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
+                send_message += "\n{username} is in the lead! ({format_date})```\n" \
                                 "Score: {format_score} / {format_pp}\n" \
                                 "Combo: {maxcombo}x / Misses: {countmiss}\n" \
                                 "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
