@@ -288,6 +288,15 @@ def handle_command(message):
                     else:
                         send_message = "Please use `!profile -m <user>`"
                 osu_users.save()
+            else:
+                if len(args) > 2:
+                    append_message = "#_"
+                    reference = " ".join(args[2:])
+                    if "ranks" in reference or "performance" in reference:
+                        reference = "leader"
+                    elif reference == "kudosu":
+                        reference = "kudos"
+                    append_message += reference
 
             if not send_message:
                 send_message = "https://osu.ppy.sh/u/" + user + append_message
