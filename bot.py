@@ -231,7 +231,8 @@ def get_osu_map(beatmap):
         send_message = "{artist} - {title} // {creator} [{version}]```\n" \
                        "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
                        "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
-                       "Stars: {format_stars:.2f}```".format(**osu_map)
+                       "Stars: {format_stars:.2f}\n" \
+                       "Favourites: {favourite_count} / Success Rate: {passcount}/{playcount}```".format(**osu_map)
 
         # If the map has scoreboard, give first player
         if osu_scores:
@@ -246,7 +247,8 @@ def get_osu_map(beatmap):
     # Return map info if no version is selected
     elif "s" in beatmap:
         send_message = "{artist} - {title} // {creator}```\n" \
-                       "Length: {format_length} BPM: {bpm}```".format(**osu_map)
+                       "Length: {format_length} BPM: {bpm}\n" \
+                       "Favourites: {favourite_count}```".format(**osu_map)
 
     return send_message
 
