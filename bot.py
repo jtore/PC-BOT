@@ -2,6 +2,7 @@ import discord
 import requests
 from sys import exit, argv
 from os import path
+from urlparse import urlparse
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 import random
@@ -9,7 +10,6 @@ import threading
 import yaml
 import pycountry
 import cleverbot
-import urlparse
 
 __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 
@@ -198,66 +198,55 @@ def get_osu_stats(user):
 
 
 # Get and format osu! map
-def get_osu_map(url):
+def get_osu_map(beatmap):
     send_message = ""
 
-    osu_map_path = path.split(urlparse.urlparse(url.strip()).path)
-    osu_map_type = osu_map_path[0][1]
+    osu_map_params = beatmap
+    osu_map_params["k"] = osu_api
 
-    if osu_api and (osu_map_type == "b" or osu_map_type == "s"):
-        osu_map_params = urlparse.parse_qs(url)
-        osu_map_params["k"] = osu_api
+    osu_map_request = requests.get("https://osu.ppy.sh/api/get_beatmaps", osu_map_params)
 
-        # Get beatmap id and type
-        osu_map_id = osu_map_path[1]
-        osu_map_id_end = osu_map_id.find("&")
-        if osu_map_id_end > 0:
-            osu_map_id = osu_map_id[:osu_map_id_end]
-        osu_map_params[osu_map_type] = osu_map_id
+    # If not found, return nothing
+    if len(osu_map_request.json()) < 1:
+        return send_message
 
-        osu_map_request = requests.get("https://osu.ppy.sh/api/get_beatmaps", osu_map_params)
+    osu_map = osu_map_request.json()[0]
+    osu_map["format_length"] = timedelta(seconds=int(osu_map["total_length"]))
 
-        # If not found, return nothing
-        if len(osu_map_request.json()) < 1:
-            return send_message
+    # Send more info when a version is sent
+    if "b" in beatmap:
+        osu_scores = None
 
-        osu_map = osu_map_request.json()[0]
-        osu_map["format_length"] = timedelta(seconds=int(osu_map["total_length"]))
+        # Get scores if the map has a scoreboard
+        if int(osu_map["approved"]) > 0:
+            osu_scores_params = osu_map_params
+            osu_scores_params["limit"] = 1
+            osu_scores_request = requests.get("https://osu.ppy.sh/api/get_scores", osu_scores_params)
 
-        # Send more info when a version is sent
-        if osu_map_type == "b":
-            osu_scores = None
+            osu_scores = osu_scores_request.json()[0]
 
-            # Get scores if the map has a scoreboard
-            if int(osu_map["approved"]) > 0:
-                osu_scores_params = osu_map_params
-                osu_scores_params["limit"] = 1
-                osu_scores_request = requests.get("https://osu.ppy.sh/api/get_scores", osu_scores_params)
+        # Format message with beatmap and difficulty info
+        osu_map["format_drain"] = timedelta(seconds=int(osu_map["hit_length"]))
+        osu_map["format_stars"] = float(osu_map["difficultyrating"])
+        send_message = "{artist} - {title} // {creator} [{version}]```\n" \
+                       "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
+                       "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
+                       "Stars: {format_stars:.2f}```".format(**osu_map)
 
-                osu_scores = osu_scores_request.json()[0]
+        # If the map has scoreboard, give first player
+        if osu_scores:
+            osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
+            osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
+            osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
+            send_message += "\n{username} is in the lead! ({format_date})```\n" \
+                            "Score: {format_score} / {format_pp}\n" \
+                            "Combo: {maxcombo}x / Misses: {countmiss}\n" \
+                            "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
 
-            # Format message with beatmap and difficulty info
-            osu_map["format_drain"] = timedelta(seconds=int(osu_map["hit_length"]))
-            osu_map["format_stars"] = float(osu_map["difficultyrating"])
-            send_message = "{artist} - {title} // {creator} [{version}]```\n" \
-                           "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
-                           "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
-                           "Stars: {format_stars:.2f}```".format(**osu_map)
-
-            # If the map has scoreboard, give first player
-            if osu_scores:
-                osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
-                osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
-                osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
-                send_message += "\n{username} is in the lead! ({format_date})```\n" \
-                                "Score: {format_score} / {format_pp}\n" \
-                                "Combo: {maxcombo}x / Misses: {countmiss}\n" \
-                                "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
-
-        # Return map info if no version is selected
-        elif osu_map_type == "s":
-            send_message = "{artist} - {title} // {creator}```\n" \
-                           "Length: {format_length} BPM: {bpm}```".format(**osu_map)
+    # Return map info if no version is selected
+    elif "s" in beatmap:
+        send_message = "{artist} - {title} // {creator}```\n" \
+                       "Length: {format_length} BPM: {bpm}```".format(**osu_map)
 
     return send_message
 
@@ -273,13 +262,25 @@ def subreddit_in(args):
 
 # Return osu! map links in a list
 def osu_maps_in(args):
-    urls = []
+    beatmaps = []
     for s in args:
             if "osu.ppy.sh" in s:
-                if s not in urls:
-                    urls.append(s)
+                # Get map type and id
+                osu_map_path = path.split(urlparse(s).path)
+                osu_map_type = osu_map_path[0][1]
+                osu_map_id = osu_map_path[1]
+                osu_map_id_end = osu_map_id.find("&")
+                if osu_map_id_end > 0:
+                    osu_map_id = osu_map_id[:osu_map_id_end]
 
-    return urls
+                # Create dictionary for beatmaps list
+                beatmap = {osu_map_type: osu_map_id}
+
+                # Add any unique beatmaps
+                if beatmap not in beatmaps:
+                    beatmaps.append(beatmap)
+
+    return beatmaps
 
 
 # Split string into list and handle keywords
@@ -512,11 +513,11 @@ def handle_command(message):
 
     # Get map links and display info
     elif osu_maps_in(args):
-        urls = osu_maps_in(args)
-        if len(urls) > 0:
-            for i, url in enumerate(urls):
-                send_message += get_osu_map(url)
-                if len(urls) > i+1:
+        beatmaps = osu_maps_in(args)
+        if len(beatmaps) > 0:
+            for i, beatmap in enumerate(beatmaps):
+                send_message += get_osu_map(beatmap)
+                if len(beatmaps) > i+1:
                     send_message += "\n\n"
 
     # Send reddit link
