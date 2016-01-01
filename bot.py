@@ -631,7 +631,7 @@ def handle_pm(message):
 
                         # Filter out words that don't work
                         try:
-                            args[0] > "abc"
+                            "{}".format(args[0])
                         except UnicodeEncodeError:
                             return "Your word has an unknown character."
                         except:
