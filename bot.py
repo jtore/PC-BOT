@@ -493,6 +493,7 @@ def handle_command(message):
         else:
             if len(args) > 1:
                 if args[1] == "--stop" or args[1] == "-s":
+                    wordsearch.pop(message.channel.id)
                     return "Word search cancelled. Shame on you."
 
             if wordsearch[message.channel.id].get("word"):
@@ -523,6 +524,8 @@ def handle_command(message):
 
                 # Add the found hint
                 wordsearch[message.channel.id]["hint"] = user_hint
+            else:
+                user_hint = hint
 
             # Return whether the word is before or after in the dictionary, or if it's correct
             if user_word > word:
