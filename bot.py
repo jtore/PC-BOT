@@ -68,7 +68,10 @@ class OnMessage(threading.Thread):
         send_message = ""
 
         if self.message.content:
-            send_message = handle_command(self.message)
+            if not self.message.channel.is_private:
+                send_message = handle_command(self.message)
+            else:
+                send_message = handle_pm(self.message)
 
         if send_message:
             send_message = send_message.encode('utf-8')
@@ -128,6 +131,9 @@ reddit_settings = Config(
 # Store story info in multiple channels
 story_enabled = {}
 story = {}
+
+# Store wordsearch in multiple channels
+wordsearch = {}
 
 # Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
@@ -476,6 +482,14 @@ def handle_command(message):
                     story[message.channel.id] += n[1:] + " "
                 else:
                     story[message.channel.id] += n + " "
+                    
+    # Begin wordsearch (Users try finding a word set by a host
+    elif args[0] == "!wordsearch":
+        if not wordsearch.get(message.channel.id):
+            client.send_message(message.channel, "Please PM me a word for users to search.")
+            wordsearch[message.channel.id]["user"] = message.author.id
+        else:
+            send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
 
     # Display  help command
     elif args[0] == "!help":
@@ -549,6 +563,18 @@ def handle_command(message):
             send_message = cleverbot_client.ask(cleverbot_question.encode('utf-8'))
 
     return send_message
+
+
+# Handles private messages
+def handle_pm(message):
+    args = message.content.split()
+
+    # Check if user is trying to give wordsearch info
+    for channel, value in wordsearch:
+        if value.get("user") == message.author.id:
+            if len(args[0]) >= 1:
+                wordsearch[channel]["word"] = args[0]
+                return "Word set to {}".format(args[0])
 
 
 @client.event
