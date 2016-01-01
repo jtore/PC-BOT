@@ -625,6 +625,8 @@ def handle_pm(message):
             if user.id == message.author.id:
                 if len(args[0]) >= 1:
                     if not wordsearch[channel].get("word"):
+                        if len(args[0]) > 32:
+                            return "This word is wicked long! Please chose a shorter one."
                         wordsearch[channel]["word"] = args[0].lower()
                         return "Word set to `{}`.".format(args[0])
                     else:
