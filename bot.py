@@ -491,6 +491,21 @@ def handle_command(message):
         else:
             send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
 
+    # Add to wordsearch if enabled
+    elif args[0].endswith("!") and wordsearch.get(message.channel.id):
+        user_word = args[0][:-1]
+        word = wordsearch[message.channel.id].get("word")
+
+        if word:
+            # Return whether the word is before or after in the dictionary, or if it's correct
+            if user_word > word:
+                send_message = "{} is after in the dictionary".format(user_word)
+            elif user_word < word:
+                send_message = "{} is before in the dictionary".format(user_word)
+            else:
+                send_message = "got it! The word was {}".format(word)
+                wordsearch.pop(message.channel.id)
+
     # Display  help command
     elif args[0] == "!help":
         send_message = "`!pcbot`"
@@ -573,8 +588,11 @@ def handle_pm(message):
     for channel, value in wordsearch.items():
         if value.get("user") == message.author.id:
             if len(args[0]) >= 1:
-                wordsearch[channel]["word"] = args[0]
-                return "Word set to {}".format(args[0])
+                if not wordsearch[channel].get("word"):
+                    wordsearch[channel]["word"] = args[0].lower()
+                    return "Word set to {}".format(args[0])
+                else:
+                    return "Word is already set to {}".format(wordsearch[channel]["word"])
 
 
 @client.event
