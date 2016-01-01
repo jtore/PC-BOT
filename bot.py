@@ -499,7 +499,7 @@ def handle_command(message):
                 send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
             else:
                 send_message = "The host ({}) has yet to set a word!".format(
-                        **wordsearch[message.channel.id].get("user").mention()
+                        wordsearch[message.channel.id].get("user").mention()
                 )
 
     # Add to wordsearch if enabled
