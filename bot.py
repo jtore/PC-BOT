@@ -513,7 +513,7 @@ def handle_command(message):
             # Update hint
             if user_word.startswith(hint):
                 for i, c in enumerate(user_word):
-                    if len(word) > i:
+                    if len(word) < i:
                         break
 
                     if not c == word[i]:
@@ -534,7 +534,7 @@ def handle_command(message):
                 wordsearch.pop(message.channel.id)
 
             if not user_word == word and user_hint:
-                send_message += " The word starts with `{}`".format(user_hint)
+                send_message += " The word starts with `{}`.".format(user_hint)
 
     # Display  help command
     elif args[0] == "!help":
