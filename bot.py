@@ -639,9 +639,10 @@ def handle_pm(message):
                             return "This word does not work for some reason. Please contact PC `!pcbot --git`"
 
                         wordsearch[channel]["word"] = args[0].lower()
-                        send_message =  "Word set to `{}`.".format(args[0])
+                        send_message = "Word set to `{}`.".format(args[0])
                     else:
-                        send_message = "Word is already set to `{}`.".format(wordsearch[channel]["word"])
+                        if not send_message:
+                            send_message = "Word is already set to `{}`.".format(wordsearch[channel]["word"])
 
     return send_message
 
