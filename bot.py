@@ -107,7 +107,8 @@ usage = {
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
-    "!story": "toggle story mode"
+    "!story": "toggle story mode",
+    "!wordsearch [-s | --stop]": "start a wordsearch or stop with --stop"
 }
 
 # Store !yn info in multiple channels
@@ -460,7 +461,7 @@ def handle_command(message):
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
             story_enabled[message.channel.id] = False
             if story[message.channel.id]:
-                send_message = "Your %s story: ```%s```" % (
+                send_message = "Your {} story: ```{}```".format(
                     random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
                                   "genius", "wonderful", "mesmerizing"]),
                     story[message.channel.id]
@@ -470,7 +471,7 @@ def handle_command(message):
         else:  # Set to True in channel, also defining if undefined
             story_enabled[message.channel.id] = True
             story[message.channel.id] = ""
-            send_message = "Recording *all words* starting with +, write only + to add new paragraph"
+            send_message = "Recording *all words* starting with +, write only + to add new paragraph."
 
     # Add to story if enabled
     elif (args[0].startswith("+")) and story_enabled.get(message.channel.id):
@@ -486,25 +487,51 @@ def handle_command(message):
     # Begin wordsearch (Users try finding a word set by a host
     elif args[0] == "!wordsearch":
         if not wordsearch.get(message.channel.id):
-            client.send_message(message.channel, "Please PM me a word for users to search.")
-            wordsearch[message.channel.id] = {"user": message.author.id}
+            send_message = "Please PM me a word for users to search."
+            wordsearch[message.channel.id] = {"user": message.author}
+            wordsearch[message.channel.id]["hint"] = ""
         else:
-            send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
+            if len(args) > 1:
+                if args[1] == "--stop" or args[1] == "-s":
+                    return "Word search cancelled. Shame on you."
+
+            if wordsearch[message.channel.id].get("word"):
+                send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
+            else:
+                send_message = "The host ({}) has yet to set a word!".format(
+                        **wordsearch[message.channel.id].get("user").mention()
+                )
 
     # Add to wordsearch if enabled
     elif args[0].endswith("!") and wordsearch.get(message.channel.id):
         user_word = args[0][:-1]
         word = wordsearch[message.channel.id].get("word")
+        hint = wordsearch[message.channel.id].get("hint")
+        user_hint = ""
 
         if word:
+            # Update hint
+            if user_word.startswith(hint):
+                for i, c in enumerate(user_word):
+                    if not c == word[i]:
+                        break
+
+                    user_hint += c
+
+                # Add the found hint
+                wordsearch[message.channel.id]["hint"] = user_hint
+
             # Return whether the word is before or after in the dictionary, or if it's correct
             if user_word > word:
-                send_message = "{} is after in the dictionary".format(user_word)
+                send_message = "`{}` is after in the dictionary.".format(user_word)
             elif user_word < word:
-                send_message = "{} is before in the dictionary".format(user_word)
+                send_message = "`{}` is before in the dictionary.".format(user_word)
             else:
-                send_message = "got it! The word was {}".format(word)
+                send_message = "got it! The word was `{}`.".format(word)
                 wordsearch.pop(message.channel.id)
+
+            if not user_word == word and user_hint:
+                send_message += " The word starts with {}".format(user_hint)
 
     # Display  help command
     elif args[0] == "!help":
@@ -586,13 +613,16 @@ def handle_pm(message):
 
     # Check if user is trying to give wordsearch info
     for channel, value in wordsearch.items():
-        if value.get("user") == message.author.id:
-            if len(args[0]) >= 1:
-                if not wordsearch[channel].get("word"):
-                    wordsearch[channel]["word"] = args[0].lower()
-                    return "Word set to {}".format(args[0])
-                else:
-                    return "Word is already set to {}".format(wordsearch[channel]["word"])
+        user = value.get("user")
+
+        if user:
+            if user.id == message.author.id:
+                if len(args[0]) >= 1:
+                    if not wordsearch[channel].get("word"):
+                        wordsearch[channel]["word"] = args[0].lower()
+                        return "Word set to `{}`.".format(args[0])
+                    else:
+                        return "Word is already set to `{}`.".format(wordsearch[channel]["word"])
 
 
 @client.event
