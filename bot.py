@@ -616,6 +616,7 @@ def handle_command(message):
 # Handles private messages
 def handle_pm(message):
     args = message.content.split()
+    send_message = ""
 
     # Check if user is trying to give wordsearch info
     for channel, value in wordsearch.items():
@@ -623,7 +624,7 @@ def handle_pm(message):
 
         if user:
             if user.id == message.author.id:
-                if len(args[0]) >= 1:
+                if len(args[0]) > 1:
                     if not wordsearch[channel].get("word"):
                         # Cancel too long words
                         if len(args[0]) > 32:
@@ -638,9 +639,11 @@ def handle_pm(message):
                             return "This word does not work for some reason. Please contact PC `!pcbot --git`"
 
                         wordsearch[channel]["word"] = args[0].lower()
-                        return "Word set to `{}`.".format(args[0])
+                        send_message =  "Word set to `{}`.".format(args[0])
                     else:
-                        return "Word is already set to `{}`.".format(wordsearch[channel]["word"])
+                        send_message = "Word is already set to `{}`.".format(wordsearch[channel]["word"])
+
+    return send_message
 
 
 @client.event
