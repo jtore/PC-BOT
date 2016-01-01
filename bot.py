@@ -487,7 +487,7 @@ def handle_command(message):
     elif args[0] == "!wordsearch":
         if not wordsearch.get(message.channel.id):
             client.send_message(message.channel, "Please PM me a word for users to search.")
-            wordsearch[message.channel.id]["user"] = message.author.id
+            wordsearch[message.channel.id] = {"user": message.author.id}
         else:
             send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
 
