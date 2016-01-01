@@ -529,11 +529,11 @@ def handle_command(message):
 
             # Return whether the word is before or after in the dictionary, or if it's correct
             if user_word > word:
-                send_message = "`{}` is after in the dictionary.".format(user_word)
+                send_message = "`{}` is *after* in the dictionary.".format(user_word)
             elif user_word < word:
-                send_message = "`{}` is before in the dictionary.".format(user_word)
+                send_message = "`{}` is *before* in the dictionary.".format(user_word)
             else:
-                send_message = "got it! The word was `{}`.".format(word)
+                send_message = "***got it!*** The word was `{}`.".format(word)
                 wordsearch.pop(message.channel.id)
 
             if not user_word == word and user_hint:
@@ -625,8 +625,18 @@ def handle_pm(message):
             if user.id == message.author.id:
                 if len(args[0]) >= 1:
                     if not wordsearch[channel].get("word"):
+                        # Cancel too long words
                         if len(args[0]) > 32:
                             return "This word is wicked long! Please chose a shorter one."
+
+                        # Filter out words that don't work
+                        try:
+                            args[0] > "abc"
+                        except UnicodeEncodeError:
+                            return "Your word has an unknown character."
+                        except:
+                            return "This word does not work for some reason. Please contact PC `!pcbot --git`"
+
                         wordsearch[channel]["word"] = args[0].lower()
                         return "Word set to `{}`.".format(args[0])
                     else:
