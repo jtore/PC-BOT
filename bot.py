@@ -570,7 +570,7 @@ def handle_pm(message):
     args = message.content.split()
 
     # Check if user is trying to give wordsearch info
-    for channel, value in wordsearch:
+    for channel, value in wordsearch.items():
         if value.get("user") == message.author.id:
             if len(args[0]) >= 1:
                 wordsearch[channel]["word"] = args[0]
