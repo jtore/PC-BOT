@@ -554,16 +554,16 @@ def handle_message(message):
                 user_hint = hint
 
             # Return whether the word is before or after in the dictionary, or if it's correct
-            if user_word > word:
-                send_message = "`{}` is *after* in the dictionary.".format(user_word)
-            elif user_word < word:
-                send_message = "`{}` is *before* in the dictionary.".format(user_word)
-            else:
-                send_message = "***got it*** after {} tries! The word was `{}`.".format(
+            if user_hint == word:
+                send_message = "***got it*** after **{}** tries! The word was `{}`.".format(
                         wordsearch[message.channel.id]["tries"],
                         word
                 )
                 wordsearch.pop(message.channel.id)
+            elif user_word > word:
+                send_message = "`{}` is *after* in the dictionary.".format(user_word)
+            elif user_word < word:
+                send_message = "`{}` is *before* in the dictionary.".format(user_word)
 
             if not user_word == word and user_hint:
                 send_message += " The word starts with `{}`.".format(user_hint)
