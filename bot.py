@@ -1,57 +1,22 @@
 import discord
 import requests
+import random
 from sys import exit, argv
 from os import path
-from urlparse import urlparse
 from datetime import datetime, timedelta
+
+from urlparse import urlparse
 from dateutil.parser import parse
-import random
 import threading
-import yaml
 import pycountry
 import cleverbot
+
+from pcbot import Config
+
 
 __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 
 
-# Sets up config files for saving and loading
-class Config:
-    """
-    Creates a configuration yml file of a dictionary
-
-    Arguments:
-        config -- Initializer for dictionaries (required)
-        file -- Filename for the config, specified without extension (default "config")
-    """
-    def __init__(self, config, filename="config"):
-        self.config = config
-        self.filename = "{}.yml".format(filename)
-
-    def save(self):
-        f = open(self.filename, "w")
-        f.write(yaml.safe_dump(self.config, encoding="utf-8", allow_unicode=True))
-        f.close()
-
-    def load(self):
-        if path.isfile(self.filename):
-            with open(self.filename, "r") as f:
-                self.config = yaml.load(f.read())
-        else:
-            self.save()
-
-    def set(self, index, value):
-        self.config[index] = value
-
-    def get(self, index):
-        if index:
-            return self.config.get(index)
-        return self.config
-
-    def remove(self, index):
-        return self.config.pop(index, False)
-
-
-# Thread class handling messages
 class OnMessage(threading.Thread):
     """
     Thread for handling commands.
@@ -69,7 +34,7 @@ class OnMessage(threading.Thread):
 
         if self.message.content:
             if not self.message.channel.is_private:
-                send_message = handle_command(self.message)
+                send_message = handle_message(self.message)
             else:
                 send_message = handle_pm(self.message)
 
@@ -77,28 +42,31 @@ class OnMessage(threading.Thread):
             send_message = send_message.encode('utf-8')
 
             # Log received command to console
-            print("%s@%s> %s" % (
+            print("{0}@{1.author.name}> {1.content}".format(
                 datetime.now().strftime("%d.%m.%y %H:%M:%S"),
-                self.message.author.name,
-                self.message.content
+                self.message
             ))
 
-            #
+            # Send any received message to the channel as @user <message ...>
             client.send_message(self.message.channel, self.message.author.mention() + " " + send_message)
 
 
+# Initialize the client
 client = discord.Client()
 
+# Get all necessary info
 if len(argv) < 3:
     print("usage: " + argv[0] + " <email> <password> [osu!api-key]")
     exit(0)
 
+# Log into the specified account
 client.login(argv[1], argv[2])
 
+# API Key for osu!
 if len(argv) > 3:
     osu_api = argv[3]
 else:
-    osu_api = input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")  # API Key for osu!
+    osu_api = raw_input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")
 
 usage = {
     "!pcbot [--git | --reddit]": "display commands",
@@ -140,12 +108,14 @@ wordsearch = {}
 cleverbot_client = cleverbot.Cleverbot()
 
 
-# Return the date since in a readable format
 def pretty_date(time):
     """
     Get a datetime object or a int() Epoch timestamp and return a
     pretty string like 'an hour ago', 'Yesterday', '3 months ago',
     'just now', etc
+
+    :param time: datetime object in UTC.
+    :return: see above
 
     source: http://stackoverflow.com/a/1551394 with some minor adjustments to fit my needs
     """
@@ -179,8 +149,14 @@ def pretty_date(time):
     return str(day_diff / 365) + " years ago"
 
 
-# Get and format osu! user stats
 def get_osu_stats(user):
+    """
+    Lookup an osu! user and return information. Does
+    not return user best.
+
+    :param user: username or user_id
+    :return: formatted string
+    """
     if osu_api:
         osu_stats_request = requests.get("https://osu.ppy.sh/api/get_user", params={"k": osu_api, "u": user})
 
@@ -204,64 +180,84 @@ def get_osu_stats(user):
     return send_message
 
 
-# Get and format osu! map
 def get_osu_map(beatmap):
+    """
+    Returns osu! beatmap info. If a mapset is specified (s),
+    only return some info about the mapset. If a difficulty/version
+    is specified, return difficulty info. If the map is ranked and
+    has a scoreboard, return extra info of the top play.
+
+    :param beatmap: Dictionary with one key, either 's' (mapset) or
+                    'b' (version), with the map id as value.
+                    Example: {'s', 267767} (required)
+    :return: string (see above)
+    """
     send_message = ""
 
-    osu_map_params = beatmap
-    osu_map_params["k"] = osu_api
+    if osu_api:
+        osu_map_params = beatmap
+        osu_map_params["k"] = osu_api
 
-    osu_map_request = requests.get("https://osu.ppy.sh/api/get_beatmaps", osu_map_params)
+        osu_map_request = requests.get("https://osu.ppy.sh/api/get_beatmaps", osu_map_params)
 
-    # If not found, return nothing
-    if len(osu_map_request.json()) < 1:
-        return send_message
+        # If not found, return nothing
+        if len(osu_map_request.json()) < 1:
+            return send_message
 
-    osu_map = osu_map_request.json()[0]
-    osu_map["format_length"] = timedelta(seconds=int(osu_map["total_length"]))
+        osu_map = osu_map_request.json()[0]
+        osu_map["format_length"] = timedelta(seconds=int(osu_map["total_length"]))
 
-    # Send more info when a version is sent
-    if "b" in beatmap:
-        osu_scores = None
+        # Send more info when a version is sent
+        if "b" in beatmap:
+            osu_scores = None
 
-        # Get scores if the map has a scoreboard
-        if int(osu_map["approved"]) > 0:
-            osu_scores_params = osu_map_params
-            osu_scores_params["limit"] = 1
-            osu_scores_request = requests.get("https://osu.ppy.sh/api/get_scores", osu_scores_params)
+            # Get scores if the map has a scoreboard
+            if int(osu_map["approved"]) > 0:
+                osu_scores_params = osu_map_params
+                osu_scores_params["limit"] = 1
+                osu_scores_request = requests.get("https://osu.ppy.sh/api/get_scores", osu_scores_params)
 
-            osu_scores = osu_scores_request.json()[0]
+                osu_scores = osu_scores_request.json()[0]
 
-        # Format message with beatmap and difficulty info
-        osu_map["format_drain"] = timedelta(seconds=int(osu_map["hit_length"]))
-        osu_map["format_stars"] = float(osu_map["difficultyrating"])
-        send_message = "{artist} - {title} // {creator} [{version}]```\n" \
-                       "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
-                       "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
-                       "Stars: {format_stars:.2f}\n" \
-                       "Favourites: {favourite_count} / Success Rate: {passcount}/{playcount}```".format(**osu_map)
+            # Format message with beatmap and difficulty info
+            osu_map["format_drain"] = timedelta(seconds=int(osu_map["hit_length"]))
+            osu_map["format_stars"] = float(osu_map["difficultyrating"])
+            send_message = "{artist} - {title} // {creator} [{version}]```\n" \
+                           "Length: {format_length} ({format_drain} drain) BPM: {bpm} Max combo: {max_combo}\n" \
+                           "    CS: {diff_size} AR: {diff_approach} OD: {diff_overall} HP: {diff_drain} " \
+                           "Stars: {format_stars:.2f}\n" \
+                           "Favourites: {favourite_count} / Success Rate: {passcount}/{playcount}```".format(**osu_map)
 
-        # If the map has scoreboard, give first player
-        if osu_scores:
-            osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
-            osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
-            osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
-            send_message += "\n{username} is in the lead! ({format_date})```\n" \
-                            "Score: {format_score} / {format_pp}\n" \
-                            "Combo: {maxcombo}x / Misses: {countmiss}\n" \
-                            "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
+            # If the map has scoreboard, give first player
+            if osu_scores:
+                osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
+                osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
+                osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
+                send_message += "\n{username} is in the lead! ({format_date})```\n" \
+                                "Score: {format_score} / {format_pp}\n" \
+                                "Combo: {maxcombo}x / Misses: {countmiss}\n" \
+                                "       {count300}x300 / {count100}x100 / {count50}x50```".format(**osu_scores)
 
-    # Return map info if no version is selected
-    elif "s" in beatmap:
-        send_message = "{artist} - {title} // {creator}```\n" \
-                       "Length: {format_length} BPM: {bpm}\n" \
-                       "Favourites: {favourite_count}```".format(**osu_map)
+        # Return map info if no version is selected
+        elif "s" in beatmap:
+            send_message = "{artist} - {title} // {creator}```\n" \
+                           "Length: {format_length} BPM: {bpm}\n" \
+                           "Favourites: {favourite_count}```".format(**osu_map)
+    else:
+        send_message = "This command is disabled :thumbsdown:"
 
     return send_message
 
 
-# Return subreddit from command or False
 def subreddit_in(args):
+    """
+    Return the first occurrence of a subreddit reference in
+    a list of strings.
+    Example: /r/all
+
+    :param args: list of strings (required)
+    :return: subreddit name (ex: all) or False
+    """
     for arg in args:
         if arg.startswith("/r/"):
             return arg[3:]
@@ -269,8 +265,16 @@ def subreddit_in(args):
     return False
 
 
-# Return osu! map links in a list
 def osu_maps_in(args):
+    """
+    Return a list of beatmaps found in a list of strings in
+    the form of a dictionary, where the key is map_type and value
+    is map_id
+    Example: {'s': 267767}
+
+    :param args: list of strings (required)
+    :return: beatmap as {map_type: map_id}
+    """
     beatmaps = []
     for s in args:
             if "osu.ppy.sh" in s:
@@ -293,7 +297,24 @@ def osu_maps_in(args):
 
 
 # Split string into list and handle keywords
-def handle_command(message):
+def handle_message(message):
+    """
+    Handles any input sent to a channel, going through a list of
+    pre-programmed commands and specifiers.
+    (This code is really messy)
+
+    Features:
+    --  !lmgtfy, !profile, !stats, !roll, !yn, !story, !wordsearch,
+        !help, !pcbot, ?trigger,
+    --  Handle any words for !story
+    --  Handle any entries (guesses) for !wordsearch
+    --  Handle subreddit references
+    --  Handle beatmap links
+    --  Return a message from Cleverbot when mentioned
+
+    :param message: a discord class Message received (required)
+    :return: type string to send back to the channel
+    """
     global story_enabled, story
 
     args = message.content.split()
@@ -614,8 +635,16 @@ def handle_command(message):
     return send_message
 
 
-# Handles private messages
 def handle_pm(message):
+    """
+    Handles any input sent to a private channel.
+
+    Features:
+        retrieve word from a user requesting a !wordsearch
+
+    :param message: a discord class Message received (required)
+    :return: type string to send back to the channel
+    """
     args = message.content.split()
     send_message = ""
 
