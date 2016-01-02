@@ -513,6 +513,7 @@ def handle_message(message):
             client.send_message(message.author, "Please enter a word!")
             wordsearch[message.channel.id] = {"user": message.author}
             wordsearch[message.channel.id]["hint"] = ""
+            wordsearch[message.channel.id]["tries"] = 0
         else:
             if len(args) > 1:
                 if args[1] == "--stop" or args[1] == "-s":
@@ -534,10 +535,12 @@ def handle_message(message):
         user_hint = ""
 
         if word:
+            wordsearch[message.channel.id]["tries"] += 1
+
             # Update hint
             if user_word.startswith(hint):
                 for i, c in enumerate(user_word):
-                    if len(word) < i:
+                    if len(word) - 1 < i:
                         break
 
                     if not c == word[i]:
@@ -556,7 +559,10 @@ def handle_message(message):
             elif user_word < word:
                 send_message = "`{}` is *before* in the dictionary.".format(user_word)
             else:
-                send_message = "***got it!*** The word was `{}`.".format(word)
+                send_message = "***got it*** after {} tries! The word was `{}`.".format(
+                        wordsearch[message.channel.id]["tries"],
+                        word
+                )
                 wordsearch.pop(message.channel.id)
 
             if not user_word == word and user_hint:
