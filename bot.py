@@ -435,9 +435,9 @@ def handle_command(message):
                             send_message = "YN reset for this " + ("server" if globally else "channel")
                     yn_set.save()
 
-                    # Warn user when the channel id equals the server id
+                    # Warn user when the channel is default channel
                     # (my understanding is that the default channel will have the same id as the server)
-                    if not globally and (message.channel.id == message.server.id):
+                    if not globally and message.channel.is_default_channel():
                         send_message += "\n*setting YN for this channel is* ***the same*** *as setting server wide YN*"
 
         # Return value from list
@@ -487,7 +487,8 @@ def handle_command(message):
     # Begin wordsearch (Users try finding a word set by a host
     elif args[0] == "!wordsearch":
         if not wordsearch.get(message.channel.id):
-            send_message = "Please PM me a word for users to search."
+            send_message = "Waiting for {} to choose a word!".format(message.author.mention())
+            client.send_message(message.author, "Please enter a word!")
             wordsearch[message.channel.id] = {"user": message.author}
             wordsearch[message.channel.id]["hint"] = ""
         else:
@@ -640,6 +641,12 @@ def handle_pm(message):
 
                         wordsearch[channel]["word"] = args[0].lower()
                         send_message = "Word set to `{}`.".format(args[0])
+                        client.send_message(
+                                client.get_channel(channel),
+                                "{} has started a word search! Enter a word ending with `!` to guess the word!".format(
+                                    user.mention()
+                                )
+                        )
                     else:
                         if not send_message:
                             send_message = "Word is already set to `{}`.".format(wordsearch[channel]["word"])
