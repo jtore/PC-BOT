@@ -560,6 +560,7 @@ def handle_message(message):
                         word
                 )
                 wordsearch.pop(message.channel.id)
+                user_hint = ""
             elif user_word > word:
                 send_message = "`{}` is *after* in the dictionary.".format(user_word)
             elif user_word < word:
