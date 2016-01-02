@@ -487,7 +487,7 @@ def handle_command(message):
     # Begin wordsearch (Users try finding a word set by a host
     elif args[0] == "!wordsearch":
         if not wordsearch.get(message.channel.id):
-            client.send_message(message.channel, "Waiting for {} to choose a word.")
+            client.send_message(message.channel, "Waiting for {} to choose a word.".format(message.author.mention()))
             client.send_message(message.author, "Please enter a word!")
             wordsearch[message.channel.id] = {"user": message.author}
             wordsearch[message.channel.id]["hint"] = ""
