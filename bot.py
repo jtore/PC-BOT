@@ -41,10 +41,11 @@ class OnMessage(threading.Thread):
         if send_message:
             send_message = send_message.encode('utf-8')
 
-            # Log received command to console
-            print("{0}@{1.author.name}> {1.content}".format(
+            # Log received command to console (old format to save myself)
+            print("%s@%s> %s" % (
                 datetime.now().strftime("%d.%m.%y %H:%M:%S"),
-                self.message
+                self.message.author.name,
+                self.message.content
             ))
 
             # Send any received message to the channel as @user <message ...>
