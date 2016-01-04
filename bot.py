@@ -38,7 +38,8 @@ class OnMessage(threading.Thread):
             else:
                 send_message = handle_pm(self.message)
 
-        if send_message:
+        # If a message can be sent and it isn't a wordsearch element
+        if send_message and not send_message.endswith("!"):
             send_message = send_message.encode('utf-8')
 
             # Log received command to console (old format to save myself)
@@ -553,21 +554,24 @@ def handle_message(message):
             else:
                 user_hint = hint
 
-            # Return whether the word is before or after in the dictionary, or if it's correct
-            if user_hint == word:
-                send_message = "***got it*** after **{}** tries! The word was `{}`.".format(
-                        wordsearch[message.channel.id]["tries"],
-                        word
-                )
-                wordsearch.pop(message.channel.id)
-                user_hint = ""
-            elif user_word > word:
-                send_message = "`{}` is *after* in the dictionary.".format(user_word)
-            elif user_word < word:
-                send_message = "`{}` is *before* in the dictionary.".format(user_word)
+            try:
+                # Return whether the word is before or after in the dictionary, or if it's correct
+                if user_hint == word:
+                    send_message = "***got it*** after **{}** tries! The word was `{}`.".format(
+                            wordsearch[message.channel.id]["tries"],
+                            word
+                    )
+                    wordsearch.pop(message.channel.id)
+                    user_hint = ""
+                elif user_word > word:
+                    send_message = "`{}` is *after* in the dictionary.".format(user_word)
+                elif user_word < word:
+                    send_message = "`{}` is *before* in the dictionary.".format(user_word)
 
-            if not user_word == word and user_hint:
-                send_message += " The word starts with `{}`.".format(user_hint)
+                if not user_word == word and user_hint:
+                    send_message += " The word starts with `{}`.".format(user_hint)
+            except UnicodeEncodeError:
+                send_message = "Your word has an unknown character. :thumbsdown:"
 
     # Display  help command
     elif args[0] == "!help":
@@ -666,13 +670,13 @@ def handle_pm(message):
                     if not wordsearch[channel].get("word"):
                         # Cancel too long words
                         if len(args[0]) > 32:
-                            return "This word is wicked long! Please chose a shorter one."
+                            return "This word is wicked long! Please choose a shorter one."
 
                         # Filter out words that don't work
                         try:
                             "{}".format(args[0])
                         except UnicodeEncodeError:
-                            return "Your word has an unknown character."
+                            return "Your word has an unknown character. :thumbsdown:"
                         except:
                             return "This word does not work for some reason. Please contact PC `!pcbot --git`"
 
