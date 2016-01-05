@@ -557,19 +557,19 @@ def handle_message(message):
             try:
                 # Return whether the word is before or after in the dictionary, or if it's correct
                 if user_hint == word:
-                    send_message = "***got it*** after **{}** tries! The word was `{}`.".format(
+                    send_message = "***got it*** after **%d** tries! The word was `%s`." % (
                             wordsearch[message.channel.id]["tries"],
                             word
                     )
                     wordsearch.pop(message.channel.id)
                     user_hint = ""
                 elif user_word > word:
-                    send_message = "`{}` is *after* in the dictionary.".format(user_word)
+                    send_message = "`%s` is *after* in the dictionary." % user_word
                 elif user_word < word:
-                    send_message = "`{}` is *before* in the dictionary.".format(user_word)
+                    send_message = "`%s` is *before* in the dictionary." % user_word
 
                 if not user_word == word and user_hint:
-                    send_message += " The word starts with `{}`.".format(user_hint)
+                    send_message += " The word starts with `%s`." % user_hint
             except UnicodeEncodeError:
                 send_message = "Your word has an unknown character. :thumbsdown:"
 
@@ -674,14 +674,14 @@ def handle_pm(message):
 
                         # Filter out words that don't work
                         try:
-                            "{}".format(args[0])
+                            "%s" % args[0]
                         except UnicodeEncodeError:
                             return "Your word has an unknown character. :thumbsdown:"
                         except:
                             return "This word does not work for some reason. Please contact PC `!pcbot --git`"
 
                         wordsearch[channel]["word"] = args[0].lower()
-                        send_message = "Word set to `{}`.".format(args[0])
+                        send_message = "Word set to `%s`." % args[0]
                         client.send_message(
                                 client.get_channel(channel),
                                 "{} has started a word search. Enter a word ending with `!` to guess the word!".format(
@@ -690,7 +690,7 @@ def handle_pm(message):
                         )
                     else:
                         if not send_message:
-                            send_message = "Word is already set to `{}`.".format(wordsearch[channel]["word"])
+                            send_message = "Word is already set to `%s`." % wordsearch[channel]["word"]
 
     return send_message
 
