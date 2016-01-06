@@ -518,8 +518,11 @@ def handle_message(message):
         else:
             if len(args) > 1:
                 if args[1] == "--stop" or args[1] == "-s":
-                    wordsearch.pop(message.channel.id)
-                    return "Word search cancelled. Shame on you."
+                    if wordsearch[message.channel.id].get("user").id == message.author.id:
+                        wordsearch.pop(message.channel.id)
+                        return "Word search cancelled."
+                    else:
+                        return "You are not the host of this word search."
 
             if wordsearch[message.channel.id].get("word"):
                 send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
