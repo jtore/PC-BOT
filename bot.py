@@ -39,7 +39,7 @@ class OnMessage(threading.Thread):
                 send_message = handle_pm(self.message)
 
         # If a message can be sent and it isn't a wordsearch element
-        if send_message and not send_message.endswith("!"):
+        if send_message:
             send_message = send_message.encode('utf-8')
 
             # Log received command to console (old format to save myself)
