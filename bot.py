@@ -599,7 +599,7 @@ def handle_message(message):
                 # Return whether the word is before or after in the dictionary, or if it's correct
                 if user_hint == word:
                     if tries == 1:
-                        send_message = "***got it*** after ONE TRY???? :hand::no_entry_sign:VAC:no_entry_sign::hand:" \
+                        send_message = "***got it*** after *ONE TRY???* :hand::no_entry_sign:VAC:no_entry_sign::hand:" \
                                        "The word was `%s`." % word
                     elif not user_hint:
                         send_message = "***:trumpet::trumpet::ok_hand::trumpet:WOW THIS IS UNBELIEVABLE:trumpet:" \
