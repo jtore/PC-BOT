@@ -47,7 +47,7 @@ class Config:
         :return: config index if index is specified, else config
         """
         if index:
-            return self.config.get(index, default=False)
+            return self.config.get(index)
 
         return self.config
 
