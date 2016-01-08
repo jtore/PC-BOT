@@ -714,10 +714,10 @@ def handle_pm(message):
                             valid_chars = valid_channel
 
                         for char in word:
-                            valid = True
+                            valid = False
                             for valid_char in valid_chars:
-                                if not char == valid_char:
-                                    valid = False
+                                if char == valid_char:
+                                    valid = True
 
                             if not valid:
                                 return "Your word has an invalid character `%s`" % char
