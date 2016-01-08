@@ -574,6 +574,7 @@ def handle_message(message):
         word = wordsearch[message.channel.id].get("word")
         hint = wordsearch[message.channel.id].get("hint")
         user_hint = ""
+        old_hint = user_hint
 
         if word:
             wordsearch[message.channel.id]["tries"] += 1
@@ -581,6 +582,7 @@ def handle_message(message):
 
             # Update hint
             if user_word.startswith(hint):
+                old_hint = hint
                 for i, c in enumerate(user_word):
                     if len(word) - 1 < i:
                         break
@@ -601,7 +603,7 @@ def handle_message(message):
                     if tries == 1:
                         send_message = "***got it*** after *ONE TRY???* :hand::no_entry_sign:VAC:no_entry_sign::hand:" \
                                        "The word was `%s`." % word
-                    elif not user_hint:
+                    elif not old_hint:
                         send_message = "***:trumpet::trumpet::ok_hand::trumpet:WOW THIS IS UNBELIEVABLE:trumpet:" \
                                        "HISTORY HAS BEEN MADE,@EVERYONE:trumpet::ok_hand::trumpet::trumpet:***\n" \
                                        "The word was `%s`!!" % word.upper()
