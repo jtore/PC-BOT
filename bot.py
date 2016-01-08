@@ -553,6 +553,7 @@ def handle_message(message):
                     # Change if the user has valid permission settings for the channel
                     if user_permissions:
                         wordsearch_characters.set(message.channel.id, charset)
+                        wordsearch_characters.save()
                         return "Channel `!wordsearch` charset set to `%s`" % charset
                     else:
                         return "You do not have permissions to use this command."
