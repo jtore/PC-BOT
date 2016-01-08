@@ -605,7 +605,7 @@ def handle_message(message):
                                        "The word was `%s`." % word
                     elif not old_hint:
                         send_message = "***:trumpet::trumpet::ok_hand::trumpet:WOW THIS IS UNBELIEVABLE:trumpet:" \
-                                       "HISTORY HAS BEEN MADE,@EVERYONE:trumpet::ok_hand::trumpet::trumpet:***\n" \
+                                       "HISTORY HAS BEEN MADE, @EVERYONE:trumpet::ok_hand::trumpet::trumpet:***\n" \
                                        "The word was `%s`!!" % word.upper()
                     else:
                         send_message = "***got it*** after **%d** tries! The word was `%s`." % (
