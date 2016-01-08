@@ -515,6 +515,37 @@ def handle_message(message):
                     
     # Begin wordsearch (Users try finding a word set by a host
     elif args[0] == "!wordsearch":
+        # Change character set
+        if len(args) > 1:
+            if args[1] == "--charset":
+                charset = ""
+
+                if len(args) > 2:
+                    charset = args[2].lower()
+
+                channel_charset = wordsearch_characters.get(message.channel.id)
+
+                # Check if channel has a set charset
+                if channel_charset:
+                    if not charset:
+                        return "This channels charset is `%s`." % channel_charset
+
+                # Check if the user has channel manage permissions before changing config
+                user_permissions = False
+                user_roles = message.author.roles
+
+                for role in user_roles:
+                    if role.permissions.can_manage_channels:
+                        user_permissions = True
+
+                # Change if the user has valid permission settings for the channel
+                if user_permissions:
+                    wordsearch_characters.set(message.channel.id, charset)
+                    wordsearch_characters.save()
+                    return "Channel `!wordsearch` charset set to `%s`" % charset
+                else:
+                    return "You do not have permissions to use this command."
+
         if not wordsearch.get(message.channel.id):
             client.send_message(message.channel, "Waiting for {} to choose a word.".format(message.author.mention()))
             client.send_message(message.author, "Please enter a word!")
@@ -529,34 +560,6 @@ def handle_message(message):
                         return "Word search cancelled."
                     else:
                         return "You are not the host of this word search."
-                elif args[1] == "--charset":
-                    charset = ""
-
-                    if len(args) > 2:
-                        charset = args[2].lower()
-
-                    channel_charset = wordsearch_characters.get(message.channel.id)
-
-                    # Check if channel has a set charset
-                    if channel_charset:
-                        if not charset:
-                            return "This channels charset is `%s`." % channel_charset
-
-                    # Check if the user has channel manage permissions before changing config
-                    user_permissions = False
-                    user_roles = message.author.roles
-
-                    for role in user_roles:
-                        if role.permissions.can_manage_channels:
-                            user_permissions = True
-
-                    # Change if the user has valid permission settings for the channel
-                    if user_permissions:
-                        wordsearch_characters.set(message.channel.id, charset)
-                        wordsearch_characters.save()
-                        return "Channel `!wordsearch` charset set to `%s`" % charset
-                    else:
-                        return "You do not have permissions to use this command."
 
             if wordsearch[message.channel.id].get("word"):
                 send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
