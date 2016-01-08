@@ -698,7 +698,7 @@ def handle_pm(message):
     send_message = ""
 
     # Check if user is trying to give wordsearch info
-    for channel_id, value in wordsearch.items():
+    for channel, value in wordsearch.items():
         user = value.get("user")
 
         if user:
@@ -706,11 +706,9 @@ def handle_pm(message):
                 if len(args[0]) > 1:
                     if not wordsearch[channel].get("word"):
                         word = args[0].lower()
-                        channel = client.get_channel(channel_id)
-
                         # Use only whitelisted characters
                         valid_chars = wordsearch_characters.get("default")
-                        valid_channel = wordsearch_characters.get(channel.id)
+                        valid_channel = wordsearch_characters.get(channel)
                         if valid_channel:
                             valid_chars = valid_channel
 
@@ -737,7 +735,7 @@ def handle_pm(message):
                         wordsearch[channel]["word"] = word
                         send_message = "Word set to `%s`." % word
                         client.send_message(
-                                channel,
+                                client.get_channel(channel),
                                 "{} has started a word search. Enter a word ending with `!` to guess the word!".format(
                                     user.mention()
                                 )
