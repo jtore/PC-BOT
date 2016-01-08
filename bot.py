@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 import discord
 import requests
 import random
@@ -12,7 +15,6 @@ import pycountry
 import cleverbot
 
 from pcbot import Config
-
 
 __git_url__ = "https://github.com/PcBoy111/PC-BOT"
 
@@ -105,6 +107,10 @@ story = {}
 
 # Store wordsearch in multiple channels
 wordsearch = {}
+wordsearch_characters = Config(
+    config={"default": "abcdefghijklmnopqrstuvwxyzæøå"},
+    filename="wordsearch_chars"
+)
 
 # Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
@@ -523,6 +529,33 @@ def handle_message(message):
                         return "Word search cancelled."
                     else:
                         return "You are not the host of this word search."
+                elif args[1] == "--charset":
+                    charset = ""
+
+                    if len(args) > 2:
+                        charset = args[2].lower()
+
+                    channel_charset = wordsearch_characters.get(message.channel.id)
+
+                    # Check if channel has a set charset
+                    if channel_charset:
+                        if not charset:
+                            return "This channels charset is `%s`." % channel_charset
+
+                    # Check if the user has channel manage permissions before changing config
+                    user_permissions = False
+                    user_roles = message.author.roles
+
+                    for role in user_roles.items():
+                        if role.permissions.can_manage_channels():
+                            user_permissions = True
+
+                    # Change if the user has valid permission settings for the channel
+                    if user_permissions:
+                        wordsearch_characters.set(message.channel.id, charset)
+                        return "Channel `!wordsearch` charset set to `%s`" % charset
+                    else:
+                        return "You do not have permissions to use this command."
 
             if wordsearch[message.channel.id].get("word"):
                 send_message = "A word search is already in progress. Enter a word ending with `!` to guess the word!"
@@ -671,6 +704,22 @@ def handle_pm(message):
             if user.id == message.author.id:
                 if len(args[0]) > 1:
                     if not wordsearch[channel].get("word"):
+                        word = args[0].lower()
+
+                        # Use only whitelisted characters
+                        valid_chars = wordsearch_characters.get(message.channel.id)
+                        if not valid_chars:
+                            wordsearch_characters.get("default")
+
+                        for char in word:
+                            valid = True
+                            for valid_char in valid_chars:
+                                if not char == valid_char:
+                                    valid = False
+
+                            if not valid:
+                                return "Your word has an invalid character `%s`" % char
+
                         # Cancel too long words
                         if len(args[0]) > 32:
                             return "This word is wicked long! Please choose a shorter one."
@@ -682,9 +731,8 @@ def handle_pm(message):
                             return "Your word has an unknown character. :thumbsdown:"
                         except:
                             return "This word does not work for some reason. Please contact PC `!pcbot --git`"
-
-                        wordsearch[channel]["word"] = args[0].lower()
-                        send_message = "Word set to `%s`." % args[0]
+                        wordsearch[channel]["word"] = word
+                        send_message = "Word set to `%s`." % word
                         client.send_message(
                                 client.get_channel(channel),
                                 "{} has started a word search. Enter a word ending with `!` to guess the word!".format(
@@ -715,6 +763,7 @@ def on_ready():
     yn_set.load()
     osu_users.load()
     reddit_settings.load()
+    wordsearch_characters.load()
 
 if __name__ == "__main__":
     client.run()
