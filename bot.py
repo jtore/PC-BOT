@@ -547,7 +547,7 @@ def handle_message(message):
                     user_roles = message.author.roles
 
                     for role in user_roles:
-                        if role.permissions.can_manage_channels():
+                        if role.permissions.can_manage_channels:
                             user_permissions = True
 
                     # Change if the user has valid permission settings for the channel
@@ -708,9 +708,10 @@ def handle_pm(message):
                         word = args[0].lower()
 
                         # Use only whitelisted characters
-                        valid_chars = wordsearch_characters.get(message.channel.id)
-                        if not valid_chars:
-                            wordsearch_characters.get("default")
+                        valid_chars = wordsearch_characters.get("default")
+                        valid_channel = wordsearch_characters.get(message.channel.id)
+                        if valid_channel:
+                            valid_chars = valid_channel
 
                         for char in word:
                             valid = True
