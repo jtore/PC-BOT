@@ -108,7 +108,7 @@ story = {}
 # Store wordsearch in multiple channels
 wordsearch = {}
 wordsearch_characters = Config(
-    config={"default": "abcdefghijklmnopqrstuvwxyzæøå"},
+    config={"default": "abcdefghijklmnopqrstuvwxyz"},
     filename="wordsearch_chars"
 )
 
@@ -546,7 +546,7 @@ def handle_message(message):
                     user_permissions = False
                     user_roles = message.author.roles
 
-                    for role in user_roles.items():
+                    for role in user_roles:
                         if role.permissions.can_manage_channels():
                             user_permissions = True
 
