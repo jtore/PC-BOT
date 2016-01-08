@@ -577,6 +577,7 @@ def handle_message(message):
 
         if word:
             wordsearch[message.channel.id]["tries"] += 1
+            tries = wordsearch[message.channel.id]["tries"]
 
             # Update hint
             if user_word.startswith(hint):
@@ -597,10 +598,18 @@ def handle_message(message):
             try:
                 # Return whether the word is before or after in the dictionary, or if it's correct
                 if user_hint == word:
-                    send_message = "***got it*** after **%d** tries! The word was `%s`." % (
-                            wordsearch[message.channel.id]["tries"],
-                            word
-                    )
+                    if tries == 1:
+                        send_message = "***got it*** after ONE TRY???? :hand::no_entry_sign:VAC:no_entry_sign::hand:" \
+                                       "The word was `%s`." % word
+                    elif not user_hint:
+                        send_message = "***:trumpet::trumpet::ok_hand::trumpet:WOW THIS IS UNBELIEVABLE:trumpet:" \
+                                       "HISTORY HAS BEEN MADE,@EVERYONE:trumpet::ok_hand::trumpet::trumpet:***\n" \
+                                       "The word was `%s`!!" % word.upper()
+                    else:
+                        send_message = "***got it*** after **%d** tries! The word was `%s`." % (
+                                wordsearch[message.channel.id]["tries"],
+                                word
+                        )
                     wordsearch.pop(message.channel.id)
                     user_hint = ""
                 elif user_word > word:
