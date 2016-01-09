@@ -569,7 +569,7 @@ def handle_message(message):
 
                     wordsearch[message.channel.id]["word"] = random.choice(wordsearch_words)
 
-            if auto:
+            if not auto:
                 client.send_message(message.channel,
                                     "Waiting for {} to choose a word.".format(message.author.mention()))
                 client.send_message(message.author, "Please enter a word!")
