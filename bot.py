@@ -571,7 +571,7 @@ def handle_message(message):
                     wordsearch[message.channel.id] = {"word": word,
                                                       "user": message.author}
                     print("**set to word")
-                    return "Made me set a word."
+                    send_message = "Made me set a word."
 
             if not auto:
                 client.send_message(message.channel,
