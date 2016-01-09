@@ -567,7 +567,7 @@ def handle_message(message):
 
                     if len(args) > 2:
                         try:
-                            amount = args[2]
+                            amount = int(args[2])
                         except ValueError:
                             pass
 
