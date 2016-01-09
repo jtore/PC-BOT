@@ -567,7 +567,11 @@ def handle_message(message):
                     if not wordsearch_words:
                         set_wordsearch_words()
 
-                    wordsearch[message.channel.id] = {"word": random.choice(wordsearch_words)}
+                    word = random.choice(wordsearch_words)
+                    wordsearch[message.channel.id] = {"word": word,
+                                                      "user": message.author}
+                    print("**set to word")
+                    return "Made me set a word."
 
             if not auto:
                 client.send_message(message.channel,
