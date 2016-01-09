@@ -75,6 +75,7 @@ else:
 usage = {
     "!pcbot [--git | --reddit]": "display commands",
     "!lmgtfy <query ...>": "let me google that for you~",
+    "!define <word/phrase ...>": "define this!",
     "!profile [-m | --me] <user> [*tag]": "sends link to osu! profile (assign with -m)",
     "!stats <user>": "displays various stats for user",
     "!roll [range]": "roll dice",
@@ -353,6 +354,22 @@ def handle_message(message):
         if len(args) > 1:
             search_query = "+".join(args[1:])
             send_message = "http://lmgtfy.com/?q={}".format(search_query)
+        else:
+            send_message = ":thumbsdown:"
+
+    # Define a word using urban dictionary
+    elif args[0] == "!define":
+        if len(args) > 1:
+            request_params = {"term", " ".join(args[1:])}
+            definitions_request = requests.get("http://api.urbandictionary.com/v0/define", request_params)
+            definitions = definitions_request.json().get("list")
+            if definitions:
+                definition = definitions[0]
+                send_message = "**%(word)s**:\n" \
+                               "%(definition)s\n" \
+                               "```%(example)s```" % definition
+            else:
+                send_message = "No such word is defined."
         else:
             send_message = ":thumbsdown:"
 
