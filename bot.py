@@ -361,7 +361,7 @@ def handle_message(message):
     elif args[0] == "!define":
         if len(args) > 1:
             request_params = {"term": " ".join(args[1:])}
-            definitions_request = requests.get("http://api.urbandictionary.com/v0/define", equest_params)
+            definitions_request = requests.get("http://api.urbandictionary.com/v0/define", request_params)
             definitions = definitions_request.json().get("list")
             if definitions:
                 definition = definitions[0]
