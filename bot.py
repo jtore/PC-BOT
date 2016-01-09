@@ -80,7 +80,7 @@ usage = {
     "!roll [range]": "roll dice",
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
     "!story": "toggle story mode",
-    "!wordsearch [-s | --stop]": "start a wordsearch or stop with --stop"
+    "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop"
 }
 
 # Store !yn info in multiple channels
@@ -111,6 +111,16 @@ wordsearch_characters = Config(
     config={"default": "abcdefghijklmnopqrstuvwxyz"},
     filename="wordsearch_chars"
 )
+wordsearch_words = []
+
+
+# Get each word in english dictionary and store it in wordsearch_words
+def set_wordsearch_words():
+    global wordsearch_words
+
+    word_request = requests.get("http://www.mieliestronk.com/corncob_lowercase.txt")
+    wordsearch_words = word_request.text.split("\n")
+
 
 # Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
@@ -547,9 +557,24 @@ def handle_message(message):
                     return "You do not have permissions to use this command."
 
         if not wordsearch.get(message.channel.id):
-            client.send_message(message.channel, "Waiting for {} to choose a word.".format(message.author.mention()))
-            client.send_message(message.author, "Please enter a word!")
-            wordsearch[message.channel.id] = {"user": message.author}
+            auto = False
+
+            if len(args) > 1:
+                if args[1] == "--auto" or args[1] == "-a":
+                    auto = True
+
+                    # Download a list of words if not stored in memory
+                    if not wordsearch_words:
+                        set_wordsearch_words()
+
+                    wordsearch[message.channel.id]["word"] = random.choice(wordsearch_words)
+
+            if auto:
+                client.send_message(message.channel,
+                                    "Waiting for {} to choose a word.".format(message.author.mention()))
+                client.send_message(message.author, "Please enter a word!")
+                wordsearch[message.channel.id] = {"user": message.author}
+
             wordsearch[message.channel.id]["hint"] = ""
             wordsearch[message.channel.id]["tries"] = 0
         else:
