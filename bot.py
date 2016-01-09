@@ -561,13 +561,28 @@ def handle_message(message):
 
             if len(args) > 1:
                 if args[1] == "--auto" or args[1] == "-a":
+                    word = ""
                     auto = True
+                    amount = 1
+
+                    if len(args) > 2:
+                        try:
+                            amount = args[2]
+                        except ValueError:
+                            pass
+
+                    if amount > 5:
+                        amount = 5
+                    elif amount < 1:
+                        amount = 1
 
                     # Download a list of words if not stored in memory
                     if not wordsearch_words:
                         set_wordsearch_words()
 
-                    word = random.choice(wordsearch_words).strip()
+                    for _ in range(amount):
+                        word += random.choice(wordsearch_words).strip()
+
                     wordsearch[message.channel.id] = {"word": word,
                                                       "user": message.author}
                     send_message = "Made me set a word."
