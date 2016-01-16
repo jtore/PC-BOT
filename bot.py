@@ -139,11 +139,13 @@ moods = Config(
 
 # Change the bots mood
 def set_mood(mood, url=None):
-    game = discord.Game
+    game = discord.Game()
+    game.name = None
 
     if not mood == "default":
         game.name = mood
-        client.change_status(game)
+
+    client.change_status(game)
 
     # Change avatar if a password is stored
     if password:
