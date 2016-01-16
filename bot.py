@@ -164,12 +164,12 @@ def set_mood(mood, url=None):
 
                 moods.set(mood, "{}.png".format(mood))
                 field["avatar"] = avatar_bytes
-        else:
-            if moods.get(mood):
-                avatar_file = open("avatars/{}".format(moods.get(mood)), "rb")
-                avatar_bytes = avatar_file.read()
 
-                field["avatar"] = avatar_bytes
+        if moods.get(mood):
+            avatar_file = open("avatars/{}".format(moods.get(mood)), "rb")
+            avatar_bytes = avatar_file.read()
+
+            field["avatar"] = avatar_bytes
 
         client.edit_profile(password, **field)
 
