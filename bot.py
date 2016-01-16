@@ -163,6 +163,7 @@ def set_mood(mood, url=None):
                 avatar_object.save("avatars/{}.png".format(mood))
 
                 moods.set(mood, "{}.png".format(mood))
+                moods.save()
                 field["avatar"] = avatar_bytes
 
         if moods.get(mood):
