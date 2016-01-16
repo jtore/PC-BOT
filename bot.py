@@ -910,6 +910,7 @@ def on_ready():
     osu_users.load()
     reddit_settings.load()
     wordsearch_characters.load()
+    moods.load()
 
     # Set mood to default (no mood) if defined
     if moods.get("default"):
