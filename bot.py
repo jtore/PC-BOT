@@ -5,7 +5,7 @@ import discord
 import requests
 import random
 from sys import exit, argv
-from os import path
+from os import path, makedirs
 from datetime import datetime, timedelta
 from io import BytesIO
 
@@ -149,11 +149,15 @@ def set_mood(mood, url=None):
     if password:
         field = {}
 
+        mood = mood.lower()
+
         if url:
             avatar_request = requests.get(url)
             if avatar_request.ok:
                 avatar_bytes = BytesIO(avatar_request.content)
                 avatar_object = Image.open(avatar_bytes)
+                if not path.exists("avatars/"):
+                    makedirs("avatars/")
                 avatar_object.save("avatars/{}.png".format(mood))
 
                 moods.set(mood, "{}.png".format(mood))
@@ -763,13 +767,14 @@ def handle_message(message):
             elif args[1] == "--mood":
                 if len(args) > 2:
                     if has_permissions(message.author):
-                        mood = args[2].lower()
+                        mood = args[2]
                         url = None
 
                         if len(args) > 3:
                             url = args[3]
 
                         set_mood(mood, url)
+                return
 
         # Print list of commands with description
         send_message = "Commands: ```"
