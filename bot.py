@@ -7,9 +7,11 @@ import random
 from sys import exit, argv
 from os import path
 from datetime import datetime, timedelta
+from io import BytesIO
 
 from urlparse import urlparse
 from dateutil.parser import parse
+from PIL import Image
 import threading
 import pycountry
 import cleverbot
@@ -63,8 +65,13 @@ if len(argv) < 3:
     print("usage: " + argv[0] + " <email> <password> [osu!api-key]")
     exit(0)
 
-# Log into the specified account
-client.login(argv[1], argv[2])
+# Store the password on request (needed to change avatar for mood setting) and login either way
+password = None
+if argv[2].startswith("*"):
+    password = argv[2][1:]
+    client.login(argv[1], argv[2][1:])
+else:
+    client.login(argv[1], argv[2])
 
 # API Key for osu!
 if len(argv) > 3:
@@ -123,8 +130,59 @@ def set_wordsearch_words():
     wordsearch_words = word_request.text.split("\n")
 
 
+# Store mood and avatar filename
+moods = Config(
+    config={},
+    filename="moods"
+)
+
+
+# Change the bots mood
+def set_mood(mood, url=None):
+    if mood == "-":
+        status = None
+    else:
+        status = mood
+
+    client.change_status(status)
+
+    # Change avatar if a password is stored
+    if password:
+        field = {}
+
+        if url:
+            avatar_request = requests.get(url)
+            if avatar_request.ok:
+                avatar_bytes = BytesIO(avatar_request.content)
+                avatar_object = Image.open(avatar_bytes)
+                avatar_object.save("avatars/{}.png".format(mood))
+
+                moods.set(mood, "{}.png".format(mood))
+                field["avatar"] = avatar_bytes
+        else:
+            if moods.get(mood):
+                avatar_file = open("avatars/{}".format(moods.get(mood)), "rb")
+                avatar_bytes = avatar_file.read()
+
+                field["avatar"] = avatar_bytes
+
+        client.edit_profile(password, **field)
+
+
 # Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
+
+
+def has_permissions(user):
+    """
+    :param user: A class discord.User
+    :return: True if user can manage channels, else False
+    """
+    for role in user.roles:
+        if role.permissions.can_manage_channels:
+            return True
+
+    return False
 
 
 def pretty_date(time):
@@ -559,16 +617,8 @@ def handle_message(message):
                     if not charset:
                         return "This channels charset is `%s`." % channel_charset
 
-                # Check if the user has channel manage permissions before changing config
-                user_permissions = False
-                user_roles = message.author.roles
-
-                for role in user_roles:
-                    if role.permissions.can_manage_channels:
-                        user_permissions = True
-
                 # Change if the user has valid permission settings for the channel
-                if user_permissions:
+                if has_permissions(message.author):
                     wordsearch_characters.set(message.channel.id, charset)
                     wordsearch_characters.save()
                     return "Channel `!wordsearch` charset set to `%s`" % charset
@@ -710,6 +760,18 @@ def handle_message(message):
                 reddit_settings.save()
                 return send_message
 
+            # Change the bots mood
+            elif args[1] == "--mood":
+                if len(args) > 2:
+                    if has_permissions(message.author):
+                        mood = args[2].lower()
+                        url = None
+
+                        if len(args) > 3:
+                            url = args[3]
+
+                        set_mood(mood, url)
+
         # Print list of commands with description
         send_message = "Commands: ```"
         longest_cmd = len(max(usage))  # Return length of longest key
@@ -841,6 +903,10 @@ def on_ready():
     osu_users.load()
     reddit_settings.load()
     wordsearch_characters.load()
+
+    # Set mood to default (no mood) if defined
+    if moods.get("default"):
+        set_mood("default")
 
 if __name__ == "__main__":
     client.run()
