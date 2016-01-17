@@ -496,11 +496,11 @@ def handle_message(message):
                 osu_users.save()
 
             if not send_message:
-                send_message = "https://osu.ppy.sh/u/" + user + append_message
+                send_message = "https://osu.ppy.sh/u/" + user.replace(" ", "%20") + append_message
         else:
             user = osu_users.get(message.author.id)
             if user:
-                send_message = "https://osu.ppy.sh/u/" + user + append_message
+                send_message = "https://osu.ppy.sh/u/" + user.replace(" ", "%20") + append_message
             else:
                 send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set."
 
