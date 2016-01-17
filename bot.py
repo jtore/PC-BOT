@@ -332,6 +332,20 @@ def get_osu_map(beatmap):
     return send_message
 
 
+def get_osu_id(user):
+    """
+    :param user: Username or ID to retrieve from
+    :return: The users ID or none if they can't be found
+    """
+    osu_user_request = requests.get("https://osu.ppy.sh/api/get_user", params={"k": osu_api, "u": user})
+    osu_user = osu_user_request.json()
+
+    if osu_user:
+        return osu_user[0]["user_id"]
+
+    return None
+
+
 def subreddit_in(args):
     """
     Return the first occurrence of a subreddit reference in
@@ -462,14 +476,21 @@ def handle_message(message):
             if args[1] == "-m" or args[1] == "--me":
                 if len(args) > 2:
                     user = " ".join(args[2:])
+
                     if args[-1].startswith("*"):
                         user = " ".join(args[2:-1])
+
+                    if osu_api:
+                        user = get_osu_id(user)
+                        if not user:
+                            return "This user does not exist."
+
                     osu_users.set(message.author.id, user)
-                    append_message += "\n*User " + user + " associated with discord*"
+                    append_message += "\n*osu! user associated with discord*"
                 else:
                     user = osu_users.remove(message.author.id)
                     if user:
-                        send_message = "*Removed discord association with " + user + "*"
+                        send_message = "*Removed discord association with osu! user.*"
                     else:
                         send_message = "Please use `!profile -m <user>`"
                 osu_users.save()
@@ -481,7 +502,7 @@ def handle_message(message):
             if user:
                 send_message = "https://osu.ppy.sh/u/" + user + append_message
             else:
-                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
+                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set."
 
     # Give a list of osu! profile stats
     elif args[0] == "!stats":
@@ -493,7 +514,7 @@ def handle_message(message):
             if user:
                 send_message = get_osu_stats(user)
             else:
-                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set"
+                send_message = "You are not associated with any osu! user :thumbsdown: use `!profile -m <user>` to set."
 
     # Roll a dice
     elif args[0] == "!roll":
@@ -627,7 +648,7 @@ def handle_message(message):
                 if has_permissions(message.author):
                     wordsearch_characters.set(message.channel.id, charset)
                     wordsearch_characters.save()
-                    return "Channel `!wordsearch` charset set to `%s`" % charset
+                    return "Channel `!wordsearch` charset set to `%s`." % charset
                 else:
                     return "You do not have permissions to use this command."
 
