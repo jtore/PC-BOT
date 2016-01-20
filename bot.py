@@ -8,6 +8,7 @@ from sys import exit, argv
 from os import path, makedirs
 from datetime import datetime, timedelta
 from io import BytesIO
+import time
 
 from urlparse import urlparse
 from dateutil.parser import parse
@@ -193,7 +194,7 @@ def send_reminder(user_id):
             private_channel = member
 
     if private_channel:
-        client.send_message(private_channel, "Wake up! The time is %s." % datetime.now())
+        client.send_message(private_channel, "Wake up! The time is %s." % datetime.now().ctime())
 
         if reminders.get(user_id):
             reminders.remove(user_id, save=True)
@@ -204,8 +205,17 @@ def remind_at(date, user_id):
     remind_in_seconds = (date - datetime.now()).total_seconds()
 
     if remind_in_seconds > 1:
-        threading.Timer(remind_in_seconds, send_reminder, args=[user_id]).start()
         reminders.set(user_id, date, save=True)
+
+        try:
+            remind_thread = threading.Timer(remind_in_seconds, send_reminder, args=[user_id])
+            remind_thread.start()
+            while True:
+                time.sleep(1000)
+                if not remind_thread.isAlive():
+                    break
+        except (KeyboardInterrupt, SystemExit):
+            pass
     else:
         if reminders.get(user_id):
             reminders.remove(user_id, save=True)
