@@ -196,7 +196,7 @@ def remind_at(date, user_id):
     remind_in_seconds = (date - datetime.now()).total_seconds()
 
     if remind_in_seconds > 1:
-        threading.Timer(remind_in_seconds, send_reminder, user_id).start()
+        threading.Timer(remind_in_seconds, send_reminder, args=[user_id]).start()
         reminders.set(user_id, date, save=True)
     else:
         if reminders.get(user_id):
