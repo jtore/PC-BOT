@@ -30,14 +30,18 @@ class Config:
         else:
             self.save()
 
-    def set(self, index, value):
+    def set(self, index, value, save=False):
         """
         Change the value of a config index
 
         :param index: any type stored in the config (required)
         :param value: any value, although dictionaries are not very well supported (required)
+        :param save: saves config if True
         """
         self.config[index] = value
+
+        if save:
+            self.save()
 
     def get(self, index=None):
         """
@@ -51,11 +55,17 @@ class Config:
 
         return self.config
 
-    def remove(self, index):
+    def remove(self, index, save=False):
         """
         Remove a key from the config
 
         :param index: index or key to remove
+        :param save: saves config if True
         :return: return value of removed key or False
         """
-        return self.config.pop(index, False)
+        popped = self.config.pop(index, False)
+
+        if save and popped:
+            self.save()
+
+        return popped
