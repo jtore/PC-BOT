@@ -57,7 +57,6 @@ class OnMessage(threading.Thread):
             # Send any received message to the channel as @user <message ...>
             client.send_message(self.message.channel, self.message.author.mention() + " " + send_message)
 
-
 # Initialize the client
 client = discord.Client()
 
@@ -206,16 +205,9 @@ def remind_at(date, user_id):
 
     if remind_in_seconds > 1:
         reminders.set(user_id, date, save=True)
-
-        try:
-            remind_thread = threading.Timer(remind_in_seconds, send_reminder, args=[user_id])
-            remind_thread.start()
-            while True:
-                time.sleep(1000)
-                if not remind_thread.isAlive():
-                    break
-        except (KeyboardInterrupt, SystemExit):
-            pass
+        remind_thread = threading.Timer(remind_in_seconds, send_reminder, args=[user_id])
+        remind_thread.setDaemon(True)
+        remind_thread.start()
     else:
         if reminders.get(user_id):
             reminders.remove(user_id, save=True)
