@@ -88,7 +88,8 @@ usage = {
     "!roll [range]": "roll dice",
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
     "!story": "toggle story mode",
-    "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop"
+    "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop",
+    "!remindme <at> <time ...>": "reminds you at any time specified"
 }
 
 # Store !yn info in multiple channels
@@ -185,10 +186,17 @@ reminders = Config(
 
 # Send a pm to user whenever they requested to be reminded
 def send_reminder(user_id):
-    client.send_message(client.get_channel(user_id), "Wake up! The time is %s." % datetime.now())
+    private_channel = None
 
-    if reminders.get(user_id):
-        reminders.remove(user_id, save=True)
+    for member in client.get_all_members():
+        if member.id == user_id:
+            private_channel = member
+
+    if private_channel:
+        client.send_message(private_channel, "Wake up! The time is %s." % datetime.now())
+
+        if reminders.get(user_id):
+            reminders.remove(user_id, save=True)
 
 
 # Remind the user in x seconds from the specified date
