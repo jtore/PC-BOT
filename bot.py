@@ -193,7 +193,7 @@ def send_reminder(user_id):
             private_channel = member
 
     if private_channel:
-        client.send_message(private_channel, "Wake up! The time is %s." % datetime.now().ctime())
+        client.send_message(private_channel, "Wake up! The time is `%s`." % datetime.now().ctime())
 
         if reminders.get(user_id):
             reminders.remove(user_id, save=True)
@@ -810,13 +810,13 @@ def handle_message(message):
                     try:
                         remind_time = parse(" ".join(args[2:]), fuzzy=True)
                     except (ValueError, OverflowError):
-                        return "I can not remind you at %s" % args[2:]
+                        return "I can not remind you at `%s`" % args[2:]
 
                     if remind_time < datetime.now():
                         return "I can only remind you in the future."
 
                     remind_at(remind_time, message.author.id)
-                    send_message = "I will remind you at %s" % remind_time
+                    send_message = "I will remind you at `%s`" % remind_time
                 else:
                     send_message = "When do you want to be reminded? `!remindme <at> <time ...>`"
             else:
