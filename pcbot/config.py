@@ -39,7 +39,7 @@ class Config:
         """
         self.config[index] = value
 
-    def get(self, index):
+    def get(self, index=None):
         """
         Get a value from the config or the config itself
 

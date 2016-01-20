@@ -175,6 +175,35 @@ def set_mood(mood, url=None):
         client.edit_profile(password, **field)
 
 
+# Store reminder alarm dates for !remindme
+# Formats as user_id: date
+reminders = Config(
+    config={},
+    filename="reminders"
+)
+
+
+# Send a pm to user whenever they requested to be reminded
+def send_reminder(user_id):
+    client.send_message(client.get_channel(user_id), "Wake up! The time is %s." % datetime.now())
+
+    if reminders.get(user_id):
+        reminders.remove(user_id)
+
+
+# Remind the user in x seconds from the specified date
+def remind_at(date, user_id):
+    remind_in_seconds = (date - datetime.now()).total_seconds()
+
+    if remind_in_seconds > 1:
+        threading.Timer(remind_in_seconds, send_reminder, user_id)
+        reminders.set(user_id, date)
+        reminders.save()
+    else:
+        if reminders.get(user_id):
+            reminders.remove(user_id)
+
+
 # Initialize cleverbot
 cleverbot_client = cleverbot.Cleverbot()
 
@@ -315,6 +344,7 @@ def get_osu_map(beatmap):
             if osu_scores:
                 osu_scores["format_score"] = "{:,}".format(int(osu_scores["score"]))
                 osu_scores["format_pp"] = "{}pp".format(osu_scores["pp"]) if osu_scores["pp"] else "0pp"
+                # Format date. Change hours=8 to whatever your offset is (I've quite frankly forgotten)
                 osu_scores["format_date"] = pretty_date(parse(osu_scores["date"]) - timedelta(hours=8))
                 send_message += "\n{username} is in the lead! ({format_date})```\n" \
                                 "Score: {format_score} / {format_pp}\n" \
@@ -604,7 +634,7 @@ def handle_message(message):
         if story_enabled.get(message.channel.id):  # Check if channel exists and if enabled
             story_enabled[message.channel.id] = False
             if story[message.channel.id]:
-                send_message = "Your {} story: ```{}```".format(
+                send_message = "Your %s story: ```%s```" % (
                     random.choice(["amazing", "fantastic", "wonderful", "excellent", "magnificent", "brilliant",
                                   "genius", "wonderful", "mesmerizing"]),
                     story[message.channel.id]
@@ -762,6 +792,28 @@ def handle_message(message):
                     send_message += " The word starts with `%s`." % user_hint
             except UnicodeEncodeError:
                 send_message = "Your word has an unknown character. :thumbsdown:"
+
+    # Remind users at a set time and date
+    elif args[0] == "!remindme":
+        if len(args) > 1:
+            if args[1] == "at":
+                if len(args) > 2:
+                    try:
+                        remind_time = parse(args[2:], fuzzy=True)
+                    except (ValueError, OverflowError):
+                        return "I can not remind you at %s" % args[2:]
+
+                    if remind_time < datetime.now():
+                        return "I can only remind you in the future."
+
+                    remind_at(remind_time, message.author.id)
+                    send_message = "I will remind you at %s" % remind_time
+                else:
+                    send_message = "When do you want to be reminded? `!remindme <at> <time ...>`"
+            else:
+                send_message = "Please specify when you want to be reminded: `!remindme <at> <time ...>`"
+        else:
+            send_message = "Please specify when you want to be reminded: `!remindme <at> <time ...>`"
 
     # Display  help command
     elif args[0] == "!help":
@@ -932,10 +984,15 @@ def on_ready():
     reddit_settings.load()
     wordsearch_characters.load()
     moods.load()
+    reminders.load()
 
     # Set mood to default (no mood) if defined
     if moods.get("default"):
         set_mood("default")
+
+    for user_id, date in reminders.get().items():
+        remind_at(date, user_id)
+
 
 if __name__ == "__main__":
     client.run()
