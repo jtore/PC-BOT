@@ -799,7 +799,7 @@ def handle_message(message):
             if args[1] == "at":
                 if len(args) > 2:
                     try:
-                        remind_time = parse(args[2:], fuzzy=True)
+                        remind_time = parse(" ".join(args[2:]), fuzzy=True)
                     except (ValueError, OverflowError):
                         return "I can not remind you at %s" % args[2:]
 
