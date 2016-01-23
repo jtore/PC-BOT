@@ -481,12 +481,14 @@ def handle_message(message):
             definitions_request = requests.get("http://api.urbandictionary.com/v0/define", request_params)
             definitions = definitions_request.json().get("list")
             if definitions:
-                definition = definitions[0]
-                if definition.get("example"):
-                    definition["example"] = "```%s```" % definition["example"]
-                send_message = "**%(word)s**:\n" \
-                               "%(definition)s\n" \
-                               "%(example)s" % definition
+                for definition in definitions:
+                    if definition.get("example"):
+                        definition["example"] = "```%s```" % definition["example"]
+                    send_message = "**%(word)s**:\n" \
+                                   "%(definition)s\n" \
+                                   "%(example)s" % definition
+                    if len(send_message) <= 2000:
+                        break
             else:
                 send_message = "No such word is defined."
         else:
