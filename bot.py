@@ -80,7 +80,7 @@ else:
     osu_api = raw_input("Enter a valid osu! API key for osu! functions (enter nothing to disable): ")
 
 usage = {
-    "!pcbot [--git | --reddit]": "display commands",
+    "!pcbot [--git | --reddit | --uptime]": "display commands",
     "!lmgtfy <query ...>": "let me google that for you~",
     "!define <word/phrase ...>": "define this!",
     "!profile [-m | --me] <user> [*tag]": "sends link to osu! profile (assign with -m)",
@@ -735,7 +735,7 @@ def handle_message(message):
         else:
             if len(args) > 1:
                 if args[1] == "--stop" or args[1] == "-s":
-                    if wordsearch[message.channel.id].get("user").id == message.author.id:
+                    if wordsearch[message.channel.id].get("user").id == message.author.id or has_permissions(message.author):
                         wordsearch.pop(message.channel.id)
                         return "Word search cancelled."
                     else:
@@ -837,6 +837,10 @@ def handle_message(message):
             if args[1] == "--git":
                 send_message = __git_url__
                 return send_message
+            
+            # Send the bots uptime
+            elif args[1] == "--uptime":
+                return "The server started %s." % pretty_date(start_date)
 
             # Toggle subreddit functionality
             elif args[1] == "--reddit":
@@ -988,6 +992,9 @@ def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
+    
+    global start_date
+    start_date = datetime.utcnow()
 
     # Load configuration files
     yn_set.load()
