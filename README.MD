@@ -1,6 +1,7 @@
 # PC BOT
 BOT for discord built with [discord.py][parent].
-Follow the link for install instructions.
+Follow the link for install instructions.  
+I recommend using the legacy branch, as this is needed for the current dev branch (and fixes a quite important bug causing the bot to crash whenever new users join a channel).
 
 **This bot is only supported for python 2.7 (cleverbot is unsupported for python 3.4)**
 [parent]: https://github.com/Rapptz/discord.py
