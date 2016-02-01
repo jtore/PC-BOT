@@ -8,7 +8,6 @@ from sys import exit, argv
 from os import path, makedirs
 from datetime import datetime, timedelta
 from io import BytesIO
-import time
 
 from urlparse import urlparse
 from dateutil.parser import parse
