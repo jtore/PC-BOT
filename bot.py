@@ -907,7 +907,7 @@ def handle_message(message):
             image_w, image_h = image.size
 
             if image_h > height:
-                proportion = height / image_h
+                proportion = float(height) / image_h
 
                 images[i] = image.resize((int(ceil(image_w * proportion)), height), Image.BILINEAR)
 
@@ -930,7 +930,7 @@ def handle_message(message):
         compared_image.save("compared.png")
 
         # Send image and remove temp file
-        client.send_message(message.channel, "%s compares these images:" % message.author.mention)
+        client.send_message(message.channel, "%s compares these images:" % message.author.mention())
         client.send_file(message.channel, "compared.png")
         remove("compared.png")
 
