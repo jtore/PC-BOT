@@ -8,6 +8,7 @@ from sys import exit, argv
 from os import path, makedirs
 from datetime import datetime, timedelta
 from io import BytesIO
+from math import ceil
 
 from urlparse import urlparse
 from dateutil.parser import parse
@@ -866,6 +867,60 @@ def handle_message(message):
             send_message = "Please specify the pasta with `!pasta <copypasta>` " \
                            "or add a pasta with `!pasta --add <pastaname> <copypasta ...>`\n" \
                            "Use `!pasta --list` for a list of copypastas."
+
+    # Compare multiple images
+    elif args[0] == "!compare":
+        images = []
+
+        # Add all images as byte like objects to list 'images'
+        # and get the minimum height
+        height = 0
+        if len(args) > 2:
+            for url in args:
+                r = requests.get(url)
+
+                # If link is valid
+                if r.ok:
+                    image_object = Image.open(BytesIO(r.content))
+                    images.append(image_object)
+
+                    image_h = image_object.height
+
+                    # Set starting height
+                    if height == 0:
+                        height = image_h
+
+                    # Choose lower height if found
+                    if image_h < height:
+                        height = image_h
+        else:
+            return "Please add at least two images to compare with `!compare <image1> <image2> <imagen>`"
+
+        # Scale images accordingly, lining up the height (always scale down)
+        for i, image in enumerate(images):
+            image_w, image_h = image.size
+
+            if image_h > height:
+                proportion = height / image_h
+
+                images[i] = image.resize((ceil(image_w * proportion), height), Image.LANCZOS)
+
+        # Find width of all images
+        width = 0
+        for image in images:
+            width += image.width
+
+        # Place all images side by side
+        compared_image = Image.new("RGBA", (width, height))
+
+        x = 0
+        for image in images:
+            image_w, image_h = image.size
+            compared_image.paste(image, box=(x, 0))
+            x += image_w
+
+        send_message = "compares these images:"
+        client.send_file(message.channel, compared_image)
 
     # Display  help command
     elif args[0] == "!help":
