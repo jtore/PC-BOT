@@ -894,7 +894,7 @@ def handle_message(message):
                     if image_h < height:
                         height = image_h
         else:
-            return "Please add at least two images to compare with `!compare <image1> <image2> <imagen>`"
+            return "Please add at least two images to compare with `!compare <image1> <image2> ... <imagen>`"
 
         # Scale images accordingly, lining up the height (always scale down)
         for i, image in enumerate(images):
@@ -903,7 +903,7 @@ def handle_message(message):
             if image_h > height:
                 proportion = height / image_h
 
-                images[i] = image.resize((ceil(image_w * proportion), height), Image.LANCZOS)
+                images[i] = image.resize((int(ceil(image_w * proportion)), height), Image.LANCZOS)
 
         # Find width of all images
         width = 0
