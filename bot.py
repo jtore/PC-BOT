@@ -850,11 +850,8 @@ def handle_message(message):
                 if len(args) > 3:
                     pasta_name = args[2].lower()
                     pasta = " ".join(args[3:])
-                    if not pastas.get(pasta_name):
-                        pastas.set(pasta_name, pasta, save=True)
-                        return "Pasta `%s` set." % pasta_name
-
-                    return "There is already a pasta defined as `%s`." % pasta_name
+                    pastas.set(pasta_name, pasta, save=True)
+                    return "Pasta `%s` set." % pasta_name
                 else:
                     return "Please follow the format of `!pasta --add <pastaname> <copypasta ...>`"
 
