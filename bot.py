@@ -862,7 +862,7 @@ def handle_message(message):
             if args[1] == ".":
                 send_message = random.choice(pasta_list.values())
             else:
-                send_message = pastas.get(args[1].lower()) or \
+                send_message = pastas.get("_".join(args[1:]).lower()) or \
                                "No such pasta is defined. Define with `!pasta --add <pastaname> <copypasta ...>`"
 
         else:
