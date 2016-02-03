@@ -921,7 +921,7 @@ def handle_message(message):
             x += image_w
 
         send_message = "compares these images:"
-        client.send_file(message.channel, compared_image)
+        client.send_file(message.channel, compared_image.tobytes())
 
     # Display  help command
     elif args[0] == "!help":
