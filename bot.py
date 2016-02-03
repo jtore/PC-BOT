@@ -872,6 +872,12 @@ def handle_message(message):
     elif args[0] == "!compare":
         images = []
 
+        # Try deleting users message
+        try:
+            client.delete_message(message)
+        except:
+            pass
+
         # Add all images as byte like objects to list 'images'
         # and get the minimum height
         height = 0
@@ -903,7 +909,7 @@ def handle_message(message):
             if image_h > height:
                 proportion = height / image_h
 
-                images[i] = image.resize((int(ceil(image_w * proportion)), height), Image.LANCZOS)
+                images[i] = image.resize((int(ceil(image_w * proportion)), height), Image.BILINEAR)
 
         # Find width of all images
         width = 0
@@ -924,11 +930,9 @@ def handle_message(message):
         compared_image.save("compared.png")
 
         # Send image and remove temp file
-        send_message = "compares these images:"
+        client.send_message(message.channel, "%s compares these images:" % message.author.mention)
         client.send_file(message.channel, "compared.png")
         remove("compared.png")
-
-        client.delete_message(message)
 
     # Display  help command
     elif args[0] == "!help":
