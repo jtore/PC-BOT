@@ -860,7 +860,7 @@ def handle_message(message):
 
             # Return a desired copypasta, or a random one if arg is .
             if args[1] == ".":
-                send_message = random.choice(pasta_list)
+                send_message = random.choice(pasta_list.values())
             else:
                 send_message = pastas.get(args[1].lower()) or \
                                "No such pasta is defined. Define with `!pasta --add <pastaname> <copypasta ...>`"
