@@ -88,7 +88,8 @@ usage = {
     "!yn [--set | --global-set [<yes> <no>]]": "yes or no (alternatively multiple choice)",
     "!story": "toggle story mode",
     "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop",
-    "!remindme <at> <time ...>": "reminds you at any time specified"
+    "!remindme <at> <time ...>": "reminds you at any time specified",
+    "!pasta <copypasta | --add <pastaname> <pasta ...>>": "pasta"
 }
 
 # Store !yn info in multiple channels
@@ -210,6 +211,13 @@ def remind_at(date, user_id):
     else:
         if reminders.get(user_id):
             reminders.remove(user_id, save=True)
+
+
+# Store globally configured pastas
+pastas = Config(
+    config={},
+    filename="pastas"
+)
 
 
 # Initialize cleverbot
@@ -824,6 +832,43 @@ def handle_message(message):
                 send_message = "Please specify when you want to be reminded: `!remindme <at> <time ...>`"
         else:
             send_message = "Please specify when you want to be reminded: `!remindme <at> <time ...>`"
+
+    # Display or set a copypasta
+    elif args[0] == "!pasta":
+        if len(args) > 1:
+            pasta_list = pastas.get()
+
+            # Return list of defined copypastas
+            if args[1] == "--list":
+                if pasta_list:
+                    return "Pastas: `%s`" % "\n".join(pasta_list)
+
+                return "There are no defined pastas. Define with `!pasta --add <pastaname> <copypasta ...>`"
+
+            # Add a copypasta
+            elif args[1] == "--add":
+                if len(args) > 3:
+                    pasta_name = args[2].lower()
+                    pasta = args[3:]
+                    if not pastas.get(pasta_name):
+                        pastas.set(pasta_name, pasta, save=True)
+                        return "Pasta set."
+
+                    return "There is already a pasta defined as `%s`." % pasta_name
+                else:
+                    return "Please follow the format of `!pasta --add <pastaname> <copypasta ...>`"
+
+            # Return a desired copypasta, or a random one if arg is .
+            if args[1] == ".":
+                send_message = random.choice(pasta_list)
+            else:
+                send_message = pastas.get(args[1].lower()) or \
+                               "No such pasta is defined. Define with `!pasta --add <pastaname> <copypasta ...>`"
+
+        else:
+            send_message = "Please specify the pasta with `!pasta <copypasta>` " \
+                           "or add a pasta with `!pasta --add <pastaname> <copypasta ...>`\n" \
+                           "Use `!pasta --list` for a list of copypastas."
 
     # Display  help command
     elif args[0] == "!help":
