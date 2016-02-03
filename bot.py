@@ -876,7 +876,7 @@ def handle_message(message):
         # and get the minimum height
         height = 0
         if len(args) > 2:
-            for url in args:
+            for url in args[1:]:
                 r = requests.get(url)
 
                 # If link is valid
