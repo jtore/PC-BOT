@@ -5,7 +5,7 @@ import discord
 import requests
 import random
 from sys import exit, argv
-from os import path, makedirs
+from os import path, makedirs, remove
 from datetime import datetime, timedelta
 from io import BytesIO
 from math import ceil
@@ -920,8 +920,15 @@ def handle_message(message):
             compared_image.paste(image, box=(x, 0))
             x += image_w
 
+        # Save file temporarily and open (I have no how to do this otherwise)
+        compared_image.save("compared.png")
+
+        # Send image and remove temp file
         send_message = "compares these images:"
-        client.send_file(message.channel, compared_image.tobytes())
+        client.send_file(message.channel, "compared.png")
+        remove("compared.png")
+
+        client.delete_message(message)
 
     # Display  help command
     elif args[0] == "!help":
