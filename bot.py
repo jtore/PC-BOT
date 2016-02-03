@@ -884,7 +884,7 @@ def handle_message(message):
                     image_object = Image.open(BytesIO(r.content))
                     images.append(image_object)
 
-                    image_h = image_object.height
+                    image_w, image_h = image_object.size
 
                     # Set starting height
                     if height == 0:
@@ -908,7 +908,8 @@ def handle_message(message):
         # Find width of all images
         width = 0
         for image in images:
-            width += image.width
+            image_w, image_h = image.size
+            width += image_w
 
         # Place all images side by side
         compared_image = Image.new("RGBA", (width, height))
