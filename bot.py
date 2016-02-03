@@ -89,7 +89,7 @@ usage = {
     "!story": "toggle story mode",
     "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop",
     "!remindme <at> <time ...>": "reminds you at any time specified",
-    "!pasta <copypasta | --add <pastaname> <pasta ...>>": "pasta"
+    "!pasta": "use command for further help"
 }
 
 # Store !yn info in multiple channels
@@ -841,7 +841,7 @@ def handle_message(message):
             # Return list of defined copypastas
             if args[1] == "--list":
                 if pasta_list:
-                    return "Pastas: `%s`" % "\n".join(pasta_list)
+                    return "Pastas: ```%s```" % "\n".join(pasta_list)
 
                 return "There are no defined pastas. Define with `!pasta --add <pastaname> <copypasta ...>`"
 
@@ -849,10 +849,10 @@ def handle_message(message):
             elif args[1] == "--add":
                 if len(args) > 3:
                     pasta_name = args[2].lower()
-                    pasta = args[3:]
+                    pasta = " ".join(args[3:])
                     if not pastas.get(pasta_name):
                         pastas.set(pasta_name, pasta, save=True)
-                        return "Pasta set."
+                        return "Pasta `%s` set." % pasta_name
 
                     return "There is already a pasta defined as `%s`." % pasta_name
                 else:
@@ -1047,6 +1047,7 @@ def on_ready():
     wordsearch_characters.load()
     moods.load()
     reminders.load()
+    pastas.load()
 
     # Set mood to default (no mood) if defined
     if moods.get("default"):
