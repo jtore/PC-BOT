@@ -90,7 +90,8 @@ usage = {
     "!story": "toggle story mode",
     "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop",
     "!remindme <at> <time ...>": "reminds you at any time specified",
-    "!pasta": "use command for further help"
+    "!pasta": "use command for further help",
+    "!compare <image1> <image2> ...": "compares multiple images"
 }
 
 # Store !yn info in multiple channels
@@ -856,6 +857,19 @@ def handle_message(message):
                 else:
                     return "Please follow the format of `!pasta --add <pastaname> <copypasta ...>`"
 
+            # Remove a pasta
+            elif args[1] == "--remove":
+                if len(args) > 2:
+                    pasta_name = "_".join(args[2:])
+                    pasta = pastas.get(pasta_name)
+                    if pasta:
+                        pastas.remove(pasta, save=True)
+                        return "Pasta `%s` removed. In case this was a mistake, here's the pasta: ```%s```" % (
+                            pasta_name, pasta
+                        )
+                else:
+                    return "Please specify a pasta to remove. `!pasta --remove <pastaname>`"
+
             # Return a desired copypasta, or a random one if arg is .
             if args[1] == ".":
                 send_message = random.choice(pasta_list.values())
@@ -864,8 +878,9 @@ def handle_message(message):
                                "No such pasta is defined. Define with `!pasta --add <pastaname> <copypasta ...>`"
 
         else:
-            send_message = "Please specify the pasta with `!pasta <copypasta>` " \
+            send_message = "Please specify the pasta with `!pasta <copypasta>`\n" \
                            "or add a pasta with `!pasta --add <pastaname> <copypasta ...>`\n" \
+                           "or remove a pasta with !pasta --remove <pastaname>\n" \
                            "Use `!pasta --list` for a list of copypastas."
 
     # Compare multiple images
