@@ -952,13 +952,19 @@ def handle_message(message):
 
     # Compress an image
     elif args[0] == "!jpeg":
+        # Try deleting users message
+        try:
+            client.delete_message(message)
+        except:
+            pass
+
         if len(args) > 1:
             r = requests.get(args[1])
             if r.ok:
                 image = Image.open(BytesIO(r.content))
 
                 # Save temporarily with quality loss using JPEG
-                image.save("compressed.jpg", quality=20)
+                image.save("compressed.jpg", quality=8)
 
                 # Send image and remove temporary file
                 client.send_file(message.channel, "compressed.jpg")
