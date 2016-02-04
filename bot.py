@@ -967,6 +967,7 @@ def handle_message(message):
                 image.save("compressed.jpg", quality=8)
 
                 # Send image and remove temporary file
+                client.send_message(message.channel, "%s compressed an image:" % message.author.mention())
                 client.send_file(message.channel, "compressed.jpg")
                 remove("compressed.jpg")
         else:
