@@ -91,7 +91,8 @@ usage = {
     "!wordsearch [-a | --auto] [-s | --stop]": "start a wordsearch or stop with --stop",
     "!remindme <at> <time ...>": "reminds you at any time specified",
     "!pasta": "use command for further help",
-    "!compare <image1> <image2> ...": "compares multiple images"
+    "!compare <image1> <image2> ...": "compares multiple images",
+    "!jpeg <image>": "needs more jpeg"
 }
 
 # Store !yn info in multiple channels
@@ -948,6 +949,22 @@ def handle_message(message):
         client.send_message(message.channel, "%s compares these images:" % message.author.mention())
         client.send_file(message.channel, "compared.png")
         remove("compared.png")
+
+    # Compress an image
+    elif args[0] == "!jpeg":
+        if len(args) > 1:
+            r = requests.get(args[1])
+            if r.ok:
+                image = Image.open(BytesIO(r.content))
+
+                # Save temporarily with quality loss using JPEG
+                image.save("compressed.jpg", quality=20)
+
+                # Send image and remove temporary file
+                client.send_file(message.channel, "compressed.jpg")
+                remove("compressed.jpg")
+        else:
+            send_message = "Please tell me what to compress. `!jpeg <image>`"
 
     # Display  help command
     elif args[0] == "!help":
