@@ -837,7 +837,7 @@ def handle_message(message):
             send_message = "Please specify when you want to be reminded: `!remindme <at> <time ...>`"
 
     # Display or set a copypasta
-    elif args[0] == "!pasta":
+    elif args[0] == "!pasta" or args[0] == "!paste":
         if len(args) > 1:
             pasta_list = pastas.get()
 
