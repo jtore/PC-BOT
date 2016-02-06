@@ -884,6 +884,14 @@ def handle_message(message):
                            "or remove a pasta with !pasta --remove <pastaname>\n" \
                            "Use `!pasta --list` for a list of copypastas."
 
+    # Writes something really insightful
+    elif args[0] == "!saysomethinginsightful":
+        chars = list("1234567890abcdefghijklmnopqrstuvwxyz")
+        message = ""
+        for i in range(1, random.randint(20, 40)):
+            message += random.choice(chars)
+        client.send_message(message.channel, message)
+
     # Compare multiple images
     elif args[0] == "!compare":
         images = []
