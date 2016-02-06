@@ -887,10 +887,11 @@ def handle_message(message):
     # Writes something really insightful
     elif args[0] == "!saysomethinginsightful":
         chars = list("1234567890abcdefghijklmnopqrstuvwxyz")
-        message = ""
+        insightful_message = ""
         for i in range(1, random.randint(20, 40)):
-            message += random.choice(chars)
-        client.send_message(message.channel, message)
+            insightful_message += random.choice(chars)
+
+        client.send_message(message.channel, insightful_message)
 
     # Compare multiple images
     elif args[0] == "!compare":
